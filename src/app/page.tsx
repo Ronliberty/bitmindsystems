@@ -5,15 +5,13 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export default function Home() {
+  // Remove body overflow manipulation
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "auto";
-    };
+    // Nothing here, scrolling is allowed
   }, []);
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-between overflow-hidden bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-800 text-white">
+    <div className="relative min-h-screen flex flex-col items-center bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-800 text-white">
       {/* Animated Background Orbs */}
       <div className="fixed inset-0 -z-10 overflow-hidden">
         <motion.div
@@ -47,7 +45,7 @@ export default function Home() {
       </motion.nav>
 
       {/* Hero Section */}
-      <div className="flex-grow flex items-center justify-center w-full px-6 z-20">
+      <div className="w-full px-6 z-20 mt-10">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
           {/* Left Text */}
           <motion.div
@@ -87,13 +85,13 @@ export default function Home() {
                 <div className="h-3 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full w-3/4 mx-auto"></div>
               </div>
               <Link href="/landing">
-              <motion.div
-                className="mt-8 w-28 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-sm font-semibold shadow-md shadow-cyan-500/30"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                Learn More
-              </motion.div>
+                <motion.div
+                  className="mt-8 w-28 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-sm font-semibold shadow-md shadow-cyan-500/30"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  Learn More
+                </motion.div>
               </Link>
             </div>
           </motion.div>
@@ -102,7 +100,7 @@ export default function Home() {
 
       {/* Footer */}
       <motion.footer
-        className="py-6 text-center text-gray-400 z-20"
+        className="py-6 text-center text-gray-400 mt-16"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.5 }}
