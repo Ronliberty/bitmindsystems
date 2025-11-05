@@ -1,49 +1,84 @@
 // lib/api.ts
+import axios from "axios";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://bitlymindsystem.pythonanywhere.com/";
+// ================================
+// 🔧 Axios Base Configuration
+// ================================
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://bitlymindsystem.pythonanywhere.com/";
 
-/**
- * Helper to send requests to your backend API.
- */
-async function request(endpoint: string, method: string, data?: object) {
-  const url = `${BASE_URL}${endpoint}`;
+const api = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true, // include cookies (for refresh tokens etc.)
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
-  const options: RequestInit = {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: data ? JSON.stringify(data) : undefined,
-  };
-
-  const res = await fetch(url, options);
-
-  // Throw an error if response is not OK
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err || `Request failed: ${res.status}`);
+// ================================
+// 🧱 Helper: Unified Error Handler
+// ================================
+function handleError(error: any) {
+  if (axios.isAxiosError(error)) {
+    const status = error.response?.status;
+    const message =
+      error.response?.data?.detail ||
+      error.response?.data?.message ||
+      error.response?.data?.non_field_errors?.[0] ||
+      "An unknown error occurred.";
+    throw new Error(`Error ${status || ""}: ${message}`);
   }
-
-  return res.json();
+  throw error;
 }
 
-/**
- * Signup user
- */
-export async function signupUser(payload: {
-  username: string;
-  email: string;
-  password: string;
-}) {
-  return request("/api/signup/", "POST", payload);
+// ================================
+// 🧍 Register User (With Invite)
+// ================================
+export async function registerUserWithInvite(data: any) {
+  try {
+    const res = await api.post("/api/register/", data);
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
 
-/**
- * Login user
- */
+// ================================
+// 🔐 Login User
+// ================================
 export async function loginUser(payload: {
   email: string;
   password: string;
 }) {
-  return request("/api/login/", "POST", payload);
+  try {
+    const res = await api.post("/api/login/", payload);
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// ================================
+// 🚪 Logout User
+// ================================
+export async function logoutUser() {
+  try {
+    const res = await api.post("/api/logout/");
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
+}
+
+// ================================
+// 🔄 Refresh Token
+// ================================
+export async function refreshToken() {
+  try {
+    const res = await api.post("/api/refresh/");
+    return res.data;
+  } catch (error) {
+    handleError(error);
+  }
 }
