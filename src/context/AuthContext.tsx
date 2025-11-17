@@ -21,8 +21,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   // ---------------- Constants ----------------
-  const API_URL = "https://bitlymindsystem.pythonanywhere.com";
-  const APP_UUID = "bc8624fc-8d05-4e79-a081-7cb2386e28e9";
+const API_URL = process.env.NEXT_PUBLIC_API_URL!;
+const APP_UUID = process.env.NEXT_PUBLIC_APP_UUID!;
+
 
   const api = axios.create({
     baseURL: API_URL,
