@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 
-const systems = [
+const defaultSystems = [
   {
     title: "Fitness Coach",
     desc: "Workout tracking, clients & performance insights",
@@ -34,7 +35,7 @@ const systems = [
   },
   {
     title: "Portfolio Owners",
-    desc: "Production  portfolio pages, market your business",
+    desc: "Production portfolio pages, market your business",
     href: "/dashboard/systems/portfolio",
     gradient: "from-red-400 to-rose-600",
     icon: "🎥",
@@ -48,9 +49,26 @@ const systems = [
   },
 ];
 
-export default function DashboardPage() {
+export default function Dashboard({ systems }: { systems?: any[] }) {
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.href = "/auth/login"; // redirect after logout
+  };
+
+  // Use the prop if provided, else fallback to default
+  const activeSystems = systems || defaultSystems;
+
   return (
     <div className="min-h-screen bg-background text-foreground px-6 py-12 flex flex-col items-center">
+      <button
+        onClick={handleLogout}
+        className="absolute top-6 right-6 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+      >
+        Logout
+      </button>
+
       <motion.div
         className="max-w-5xl w-full text-center mb-12"
         initial={{ opacity: 0, y: -20 }}
@@ -67,7 +85,7 @@ export default function DashboardPage() {
 
       {/* Grid of System Cards */}
       <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full">
-        {systems.map((sys, i) => (
+        {activeSystems.map((sys, i) => (
           <motion.div
             key={i}
             whileHover={{ scale: 1.05, y: -4 }}
@@ -77,9 +95,7 @@ export default function DashboardPage() {
               href={sys.href}
               className={`block p-6 rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition relative overflow-hidden`}
             >
-              <div
-                className={`absolute inset-0 opacity-10 bg-gradient-to-br ${sys.gradient}`}
-              ></div>
+              <div className={`absolute inset-0 opacity-10 bg-gradient-to-br ${sys.gradient}`}></div>
               <div className="relative z-10 flex flex-col gap-3 text-left">
                 <div className="text-4xl">{sys.icon}</div>
                 <h2 className="text-xl font-semibold">{sys.title}</h2>

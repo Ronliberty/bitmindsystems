@@ -1,12 +1,11 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
-import { useEffect } from "react";
-
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext"; 
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -16,9 +15,7 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-
-
-   async function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setErr(null);
@@ -40,7 +37,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-800 text-white relative overflow-hidden">
-      {/* Background Animated Lights */}
+      {/* Background */}
       <div className="absolute inset-0 -z-10">
         <motion.div
           className="absolute top-[10%] left-[20%] w-[40vmax] h-[40vmax] bg-cyan-500 rounded-full blur-[100px] opacity-20"
@@ -54,7 +51,7 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Login Card */}
+      {/* Card */}
       <motion.div
         className="w-[90%] max-w-md p-8 rounded-3xl bg-gray-900/60 backdrop-blur-xl border border-white/10 shadow-2xl text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -66,8 +63,7 @@ export default function LoginPage() {
         </h1>
         <p className="text-gray-400 mb-8 text-sm">Welcome back! Please log in.</p>
 
-        {/* Form */}
-        <form className="flex flex-col gap-4 text-left">
+        <form className="flex flex-col gap-4 text-left" onSubmit={onSubmit}>
           <div>
             <label className="text-sm text-gray-300">Email</label>
             <input
@@ -75,7 +71,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               type="email"
               placeholder="you@example.com"
-               required
+              required
               className="w-full mt-1 p-3 rounded-lg bg-gray-800/60 border border-gray-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400 outline-none text-sm"
             />
           </div>
@@ -83,23 +79,21 @@ export default function LoginPage() {
             <label className="text-sm text-gray-300">Password</label>
             <input
               value={password}
-             onChange={(e) => setPassword(e.target.value)}
-            // placeholder="Password"
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
+              type="password"
               required
-
               className="w-full mt-1 p-3 rounded-lg bg-gray-800/60 border border-gray-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400 outline-none text-sm"
             />
           </div>
           <button
             type="submit"
-             disabled={loading}
+            disabled={loading}
             className="mt-4 bg-gradient-to-r from-cyan-500 to-blue-600 w-full py-3 rounded-lg font-semibold text-white hover:opacity-90 transition"
           >
-            
-             {loading ? "Signing in..." : "Sign in"}
+            {loading ? "Signing in..." : "Sign in"}
           </button>
-           {err && <p className="text-red-500 text-sm mt-1">{err}</p>}
+          {err && <p className="text-red-500 text-sm mt-1">{err}</p>}
         </form>
 
         <div className="mt-6 flex items-center gap-3">
@@ -108,7 +102,6 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-700"></div>
         </div>
 
-        {/* Google Sign-In */}
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -120,7 +113,7 @@ export default function LoginPage() {
 
         <p className="text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
-          <Link href="/auth/signup" className="text-cyan-400 hover:underline">
+          <Link href="/auth/register" className="text-cyan-400 hover:underline">
             Create one
           </Link>
         </p>
@@ -128,4 +121,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
