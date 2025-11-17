@@ -83,6 +83,16 @@ const APP_UUID = process.env.NEXT_PUBLIC_APP_UUID!;
       return false;
     }
   }
+async function loadUser() {
+  try {
+    const res = await api.get("/api/user/me/");
+    setUser(res.data);
+  } catch (err) {
+    setUser(null);
+  }
+}
+
+// Call after login or refresh
 
   // ---------------- LOGOUT ----------------
   async function logout() {

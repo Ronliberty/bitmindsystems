@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-
+import { useState } from "react";
 const defaultSystems = [
   {
     title: "Fitness Coach",
@@ -11,6 +11,7 @@ const defaultSystems = [
     href: "/dashboard/systems/fitness",
     gradient: "from-green-400 to-emerald-600",
     icon: "💪",
+    requiredType: "coach",
   },
   {
     title: "Artist Hub",
@@ -18,6 +19,15 @@ const defaultSystems = [
     href: "/dashboard/systems/artist",
     gradient: "from-pink-400 to-fuchsia-600",
     icon: "🎨",
+    requiredType: "artist",
+  },
+  {
+    title: "Agents & Support",
+    desc: "Customer support & ticketing system",
+    href: "/dashboard/systems/agents",
+    gradient: "from-pink-400 to-blue-600",
+    icon: "🛎️",
+    requiredType: "agent", // <-- add required type
   },
   {
     title: "Video Editing Studio",
@@ -25,6 +35,7 @@ const defaultSystems = [
     href: "/dashboard/systems/video",
     gradient: "from-indigo-400 to-blue-600",
     icon: "🎬",
+    requiredType: "editor",
   },
   {
     title: "E-Commerce Owners",
@@ -32,6 +43,7 @@ const defaultSystems = [
     href: "/dashboard/systems/ecommerce",
     gradient: "from-orange-400 to-amber-600",
     icon: "🛍️",
+    requiredType: "elite",
   },
   {
     title: "Portfolio Owners",
@@ -39,6 +51,7 @@ const defaultSystems = [
     href: "/dashboard/systems/portfolio",
     gradient: "from-red-400 to-rose-600",
     icon: "🎥",
+    requiredType: "porta",
   },
   {
     title: "Admins / System Owners",
@@ -46,15 +59,27 @@ const defaultSystems = [
     href: "/dashboard/systems/admin",
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
+    requiredType: "manager",
   },
 ];
 
 export default function Dashboard({ systems }: { systems?: any[] }) {
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
+    const [showPopup, setShowPopup] = useState(false);
+    const [requiredRole, setRequiredRole] = useState<string>("");
 
   const handleLogout = async () => {
     await logout();
     window.location.href = "/auth/login"; // redirect after logout
+  };
+
+  const handleSystemClick = (sys: any) => {
+    if (sys.requiredType && user?.user_type !== sys.requiredType) {
+      setRequiredRole(sys.requiredType);
+     setShowPopup(true); 
+      return;
+    }
+    window.location.href = sys.href;
   };
 
   // Use the prop if provided, else fallback to default
@@ -91,9 +116,9 @@ export default function Dashboard({ systems }: { systems?: any[] }) {
             whileHover={{ scale: 1.05, y: -4 }}
             transition={{ type: "spring", stiffness: 300, damping: 15 }}
           >
-            <Link
-              href={sys.href}
-              className={`block p-6 rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition relative overflow-hidden`}
+            <div
+              onClick={() => handleSystemClick(sys)}
+              className={`cursor-pointer block p-6 rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition relative overflow-hidden`}
             >
               <div className={`absolute inset-0 opacity-10 bg-gradient-to-br ${sys.gradient}`}></div>
               <div className="relative z-10 flex flex-col gap-3 text-left">
@@ -101,10 +126,27 @@ export default function Dashboard({ systems }: { systems?: any[] }) {
                 <h2 className="text-xl font-semibold">{sys.title}</h2>
                 <p className="text-sm text-muted-foreground">{sys.desc}</p>
               </div>
-            </Link>
+            </div>
           </motion.div>
         ))}
       </div>
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="bg-[#1a1a1a] text-white rounded-xl p-6 max-w-sm w-full shadow-lg text-center">
+            <h2 className="text-xl font-semibold mb-3">Access Denied</h2>
+          <p className="mb-4">
+              You must be a <span className="font-bold">{requiredRole}</span> to access this system.
+            </p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="px-4 py-2 bg-cyan-400 text-black font-medium rounded-lg hover:bg-cyan-500 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
 
       <motion.footer
         className="mt-16 text-sm text-muted-foreground"
