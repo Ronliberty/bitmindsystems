@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
@@ -7,6 +9,7 @@ type AuthContextType = {
   access: string | null;
   user: any | null;
   loading: boolean;
+  isLoggedIn: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   register: (payload: any) => Promise<any>;
@@ -15,124 +18,117 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL;
+
+/* --------------------- AXIOS INTERCEPTOR FOR AUTH --------------------- */
+axios.interceptors.request.use((config) => {
+  const token = (globalThis as any)._access;
+  if (token) {
+    config.headers["Authorization"] = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [access, setAccess] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ---------------- Constants ----------------
-const API_URL = process.env.NEXT_PUBLIC_API_URL!;
-const APP_UUID = process.env.NEXT_PUBLIC_APP_UUID!;
+  function syncAccess(token: string | null) {
+    (globalThis as any)._access = token; // store in memory only
+    setAccess(token);
+  }
 
-
-  const api = axios.create({
-    baseURL: API_URL,
-    withCredentials: true,
-    headers: { "Content-Type": "application/json" },
-  });
-
-  // ---------------- LOGIN ----------------
+  /* -------------------------- LOGIN -------------------------- */
   async function login(email: string, password: string) {
     setLoading(true);
     try {
-      const res = await api.post("/api/auth/login/", {
+      const res = await axios.post("/api/auth/login/", {
         email,
         password,
-        react_app: APP_UUID,
+        react_app: process.env.NEXT_PUBLIC_APP_UUID,
       });
 
-      setAccess(res.data.access);
+      syncAccess(res.data.access ?? null);
       setUser(res.data.user ?? null);
-      localStorage.setItem("access_token", res.data.access); // persist access
-    } catch (err: any) {
-      console.error("Login error:", err.response?.data || err.message);
-      throw err.response?.data || err;
     } finally {
       setLoading(false);
     }
   }
 
-  // ---------------- REGISTER ----------------
+  /* -------------------------- REGISTER ------------------------ */
   async function register(payload: any) {
+    setLoading(true);
     try {
-      const res = await api.post("/api/signup/", {
+      const res = await axios.post("/api/signup/", {
         ...payload,
-        react_app: APP_UUID,
+        react_app: process.env.NEXT_PUBLIC_APP_UUID,
       });
 
+      syncAccess(res.data.access ?? null);
       setUser(res.data.user ?? null);
+
       return res.data;
-    } catch (err: any) {
-      console.error("Register error:", err.response?.data || err.message);
-      throw err.response?.data || err;
+    } finally {
+      setLoading(false);
     }
   }
 
-  // ---------------- REFRESH ----------------
+  /* -------------------------- REFRESH ------------------------- */
   async function refresh(): Promise<boolean> {
     try {
-      const res = await api.post("/api/auth/refresh/");
-      setAccess(res.data.access);
+      const res = await axios.post("/api/auth/refresh/");
+
+      syncAccess(res.data.access ?? null);
       setUser(res.data.user ?? null);
-      localStorage.setItem("access_token", res.data.access);
+
       return true;
-    } catch (err) {
-      setAccess(null);
+    } catch {
+      syncAccess(null);
       setUser(null);
-      localStorage.removeItem("access_token");
       return false;
+    } finally {
+      setLoading(false);
     }
   }
-async function loadUser() {
-  try {
-    const res = await api.get("/api/user/me/");
-    setUser(res.data);
-  } catch (err) {
+
+  /* -------------------------- LOGOUT -------------------------- */
+  async function logout() {
+    await axios.post("/api/logout/");
+    syncAccess(null);
     setUser(null);
   }
-}
 
-// Call after login or refresh
-
-  // ---------------- LOGOUT ----------------
-  async function logout() {
-    try {
-      await api.post("/api/logout/");
-    } catch (err) {
-      console.warn("Logout error:", err);
-    } finally {
-      setAccess(null);
-      setUser(null);
-      localStorage.removeItem("access_token");
-    }
-  }
-
-  // ---------------- INIT ----------------
+  /* ---- ON PAGE LOAD: try refreshing using HttpOnly cookie ---- */
   useEffect(() => {
-    const init = async () => {
-      const storedToken = localStorage.getItem("access_token");
-      if (storedToken) {
-        setAccess(storedToken);
-      }
-
-      await refresh(); // try to refresh using cookie
-      setLoading(false);
-    };
-    init();
+    refresh();
   }, []);
 
   const isLoggedIn = !!user;
 
   return (
-    <AuthContext.Provider value={{ access, user, loading, login, logout, register, refresh }}>
+    <AuthContext.Provider
+      value={{
+        access,
+        user,
+        loading,
+        isLoggedIn,
+        login,
+        logout,
+        register,
+        refresh,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook to consume AuthContext
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
-  return ctx;
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+    return ctx;
 }

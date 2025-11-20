@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 const defaultSystems = [
   {
     title: "Fitness Coach",
@@ -64,13 +65,19 @@ const defaultSystems = [
 ];
 
 export default function Dashboard({ systems }: { systems?: any[] }) {
-  const { user, logout } = useAuth();
+  const router = useRouter();
+  const { user, logout, isLoggedIn } = useAuth();
     const [showPopup, setShowPopup] = useState(false);
     const [requiredRole, setRequiredRole] = useState<string>("");
 
+    
   const handleLogout = async () => {
-    await logout();
-    window.location.href = "/auth/login"; // redirect after logout
+    try {
+      await logout();
+      router.push("/");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
   const handleSystemClick = (sys: any) => {
