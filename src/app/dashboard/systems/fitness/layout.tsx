@@ -15,7 +15,7 @@ import {
 const quickActions = [
   { title: "Add Workout", icon: <Dumbbell className="w-6 h-6" />, href: "/dashboard/systems/fitness/workouts/new" },
   { title: "Add Meal Plan", icon: <PlusCircle className="w-6 h-6" />, href: "/dashboard/systems/fitness/meals/new" },
-  { title: "View Users", icon: <Users className="w-6 h-6" />, href: "/dashboard/systems/fitness/members/list" },
+  { title: "View Users", icon: <Users className="w-6 h-6" />, href: "/dashboard/systems/fitness/members" },
   { title: "Community", icon: <BarChart2 className="w-6 h-6" />,  href: "https://fitness-six-pied.vercel.app/",  external: true },
   { title: "Events", icon: <Calendar className="w-6 h-6" />, href: "/dashboard/systems/fitness/events" },
 ];
