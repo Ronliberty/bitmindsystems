@@ -23,6 +23,24 @@ export interface GymMember {
   gym: number;
 }
 
+export interface MealPlan {
+  id: number;
+  title: string;
+  description: string | null;
+  total_calories: number;
+  is_active: boolean;
+  items: MealItem[];
+}
+
+export interface MealItem {
+  id: number;
+  name: string;
+  calories: number;
+  protein_g: string;
+  carbs_g: string;
+  fats_g: string;
+  meal_time: string;
+}
 
 export async function fetchCurrentUser() {
   const res = await axios.get("/api/user/me/");
@@ -47,7 +65,7 @@ async function authFetch(path: string, options: RequestInit = {}): Promise<Respo
 }
 
 export async function getGymMembers(accessToken: string) {
-  const res = await fetch(`${API_BASE}/api//fitness/gym/members/`, {
+  const res = await fetch(`${API_BASE}/api/fitness/gym/members/`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -58,6 +76,81 @@ export async function getGymMembers(accessToken: string) {
 
   if (!res.ok) {
     throw new Error(`Failed to fetch gym members: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+
+
+export async function getMealPlans(accessToken: string): Promise<MealPlan[]> {
+  const res = await fetch(`${API_BASE}/api/fitness/plans/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch meal plans: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+
+
+export async function createMealPlan(
+  accessToken: string,
+  data: {
+    title: string;
+    description?: string;
+    total_calories: number;
+    is_active: boolean;
+  }
+): Promise<MealPlan> {
+  const res = await fetch(`${API_BASE}/api/fitness/plans/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to create meal plan: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+
+export async function updateMealPlan(
+  accessToken: string,
+  mealPlanId: number,
+  data: Partial<{
+    title: string;
+    description: string;
+    total_calories: number;
+    is_active: boolean;
+  }>
+): Promise<MealPlan> {
+  const res = await fetch(`${API_BASE}/api/fitness/plans/${mealPlanId}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to update meal plan: ${res.status}`);
   }
 
   return res.json();
