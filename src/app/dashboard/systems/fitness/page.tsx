@@ -173,7 +173,7 @@ export default function FitnessDashboardPage() {
             </li>
           ))}
         </ul>
-        <Link href="/fitness/meals/new" className="block mt-4 text-sm text-primary hover:underline">
+        <Link href="/dashboard/systems/fitness/meals/new" className="block mt-4 text-sm text-primary hover:underline">
           + Add New Meal Plan
         </Link>
       </motion.div>
