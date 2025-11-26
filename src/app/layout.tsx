@@ -2,6 +2,7 @@ import "./globals.css";
 import { Metadata } from "next";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "BitMind Systems",
@@ -31,6 +32,7 @@ function Providers({ children }: { children: React.ReactNode }) {
     <AuthProvider>
       <ThemeProvider attribute="class" enableSystem defaultTheme="system">
         {children}
+        <Analytics />
       </ThemeProvider>
     </AuthProvider>
   );
