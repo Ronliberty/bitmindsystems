@@ -42,6 +42,17 @@ export interface MealItem {
   meal_time: string;
 }
 
+export interface PortaSubmission {
+  id: number;
+  react_app: number;
+  name: string;
+  email: string;
+  contact: string;
+  country: string;
+  address: string;
+  created_at: string;
+}
+
 export async function fetchCurrentUser() {
   const res = await axios.get("/api/user/me/");
   return res.data; // { id, email, first_name, last_name, user_type }
@@ -151,6 +162,24 @@ export async function updateMealPlan(
 
   if (!res.ok) {
     throw new Error(`Failed to update meal plan: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+
+export async function getPortaSubmissions(accessToken: string): Promise<PortaSubmission[]> {
+  const res = await fetch(`${API_BASE}/api/portfolio/porta/submissions/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch porta submissions: ${res.status}`);
   }
 
   return res.json();
