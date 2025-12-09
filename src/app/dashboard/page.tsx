@@ -28,7 +28,7 @@ const defaultSystems = [
     href: "/dashboard/systems/agents",
     gradient: "from-pink-400 to-blue-600",
     icon: "🛎️",
-    requiredType: "agent", // <-- add required type
+    requiredType: "employee", // <-- add required type
   },
   {
     title: "Video Editing Studio",
@@ -36,7 +36,7 @@ const defaultSystems = [
     href: "/dashboard/systems/video",
     gradient: "from-indigo-400 to-blue-600",
     icon: "🎬",
-    requiredType: "editor",
+    requiredType: "employee",
   },
   {
     title: "E-Commerce Owners",

@@ -28,12 +28,6 @@ export default function SubmissionsPage({ submissions = [] }: SubmissionsPagePro
             View all form submissions linked to your React App.
           </p>
 
-          <Link
-            href="/dashboard/portfolio"
-            className="inline-flex items-center text-sm text-cyan-400 hover:underline mt-4"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-          </Link>
         </header>
 
         {/* Submissions List */}

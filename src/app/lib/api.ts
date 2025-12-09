@@ -52,6 +52,95 @@ export interface PortaSubmission {
   address: string;
   created_at: string;
 }
+export interface Task {
+  id: number;
+  title: string;
+  assigned_to: string | null;
+  task_type: string;
+
+  client_name: string;
+  client_email: string;
+  project_id: string;
+  project_name: string;
+
+  estimated_hours: string;
+  actual_hours: string;
+
+  reward_amount: string;
+  payment_status: string;
+
+  task_details: Record<string, any>;
+
+  get_task_details_display: Record<string, any>;
+
+  progress_percentage: number;
+  revision_count: number;
+  revision_notes: string;
+  quality_rating: number;
+
+  priority: string;
+  status: string;
+  due_date: string;
+  created_at: string;
+}
+export interface PaymentRecord {
+  id: number;
+  employee: string; // Employee full name or identifier
+  payment_type: string;
+  payment_status: string;
+
+  amount: string;
+  currency: string;
+  tax_amount: string;
+  net_amount: string;
+
+  contract?: string | null; // optional contract identifier
+
+  tasks: {
+    id: number;
+    title: string;
+  }[];
+
+  payment_date: string;
+  processed_date?: string | null;
+
+  payment_method: string;
+  transaction_id: string;
+  payment_reference: string;
+
+  notes: string;
+  invoice_url?: string;
+  receipt_url?: string;
+
+  created_at: string;
+  updated_at: string;
+}
+export interface FileReference {
+  id: number;
+  file_name: string;
+  file_type: string;
+  file_size: number; // in bytes
+  file_url: string;
+  storage_provider: string;
+
+  uploaded_by: string | null; // user full name
+  context_type: string;
+
+  object_id: number;
+  description: string;
+  tags: string[];
+
+  version: number;
+  is_current: boolean;
+  replaces?: number | null; // id of replaced file
+
+  is_public: boolean;
+  access_password?: string;
+
+  created_at: string;
+  updated_at: string;
+}
+
 
 export async function fetchCurrentUser() {
   const res = await axios.get("/api/user/me/");
@@ -184,3 +273,61 @@ export async function getPortaSubmissions(accessToken: string): Promise<PortaSub
 
   return res.json();
 }
+
+
+
+
+export async function getTasks(accessToken: string) {
+  const res = await fetch(`${API_BASE}/api/employee/manager/tasks/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch gym members: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+
+
+export async function getPayments(accessToken: string) {
+  const res = await fetch(`${API_BASE}/api/employee/manager/payments/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch gym members: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+
+export async function getFiles(accessToken: string) {
+  const res = await fetch(`${API_BASE}/api/employee/manager/files/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch gym members: ${res.status}`);
+  }
+
+  return res.json();
+}
+
