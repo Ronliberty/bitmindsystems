@@ -102,14 +102,7 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-700"></div>
         </div>
 
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-6 flex items-center justify-center gap-3 w-full border border-gray-700 py-3 rounded-lg bg-gray-800/40 hover:bg-gray-800/70 transition"
-        >
-          <FcGoogle className="text-2xl" />
-          <span className="font-medium">Continue with Google</span>
-        </motion.button>
+        
 
         <p className="text-sm text-gray-500 mt-6">
           Don’t have an account?{" "}
