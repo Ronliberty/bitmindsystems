@@ -5,6 +5,16 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+const rolePermissions: Record<string, string[]> = {
+  manager: [ "elite", "porta", "manager"], 
+  elite: ["elite"],                    
+  employee: ["employee"],                       
+  coach: ["coach"],
+  artist: ["artist"],
+  porta: ["porta"],
+  // add more later like "vip", "pro", etc.
+};
 const defaultSystems = [
   {
     title: "Fitness Coach",
@@ -69,7 +79,17 @@ export default function Dashboard({ systems }: { systems?: any[] }) {
   const { user, logout, isLoggedIn } = useAuth();
     const [showPopup, setShowPopup] = useState(false);
     const [requiredRole, setRequiredRole] = useState<string>("");
+const userType = user?.user_type;
+const canAccess = (requiredType?: string) => {
+    if (!requiredType) return true; // no restriction = everyone
+    if (!userType) return false;
 
+    const allowedTypes = rolePermissions[userType];
+    return allowedTypes ? allowedTypes.includes(requiredType) : false;
+  };
+  const accessibleSystems = (systems || defaultSystems).filter((sys) =>
+    canAccess(sys.requiredType)
+  );
     
   const handleLogout = async () => {
     try {
@@ -81,19 +101,19 @@ export default function Dashboard({ systems }: { systems?: any[] }) {
   };
 
   const handleSystemClick = (sys: any) => {
-    if (sys.requiredType && user?.user_type !== sys.requiredType) {
-      setRequiredRole(sys.requiredType);
-     setShowPopup(true); 
+    if (!canAccess(sys.requiredType)) {
+      setRequiredRole(sys.requiredType || "restricted");
+      setShowPopup(true);
       return;
     }
-    window.location.href = sys.href;
+    router.push(sys.href);
   };
 
   // Use the prop if provided, else fallback to default
   const activeSystems = systems || defaultSystems;
 
   return (
-    <div className="min-h-screen bg-background text-foreground px-6 py-12 flex flex-col items-center">
+  <div className="min-h-screen bg-background text-foreground px-6 py-12 flex flex-col items-center">
       <button
         onClick={handleLogout}
         className="absolute top-6 right-6 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
@@ -108,60 +128,76 @@ export default function Dashboard({ systems }: { systems?: any[] }) {
         transition={{ duration: 0.6 }}
       >
         <h1 className="text-4xl font-extrabold mb-3 bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 to-blue-500">
-          Welcome to BitMind Systems
+          Welcome back, {user?.name || user?.email}!
         </h1>
         <p className="text-muted-foreground text-lg">
-          Choose a workspace to begin — each system is tailored for a specific domain.
+          {accessibleSystems.length === 0
+            ? "No systems available for your current role."
+            : "Select a workspace to get started."}
         </p>
       </motion.div>
 
-      {/* Grid of System Cards */}
-      <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full">
-        {activeSystems.map((sys, i) => (
-          <motion.div
-            key={i}
-            whileHover={{ scale: 1.05, y: -4 }}
-            transition={{ type: "spring", stiffness: 300, damping: 15 }}
-          >
-            <div
-              onClick={() => handleSystemClick(sys)}
-              className={`cursor-pointer block p-6 rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition relative overflow-hidden`}
+      {accessibleSystems.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-2xl text-muted-foreground mb-4">
+            Role: <span className="font-bold capitalize">{userType || "Guest"}</span>
+          </p>
+          <p>Contact support to upgrade your access.</p>
+        </div>
+      ) : (
+        <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl w-full">
+          {accessibleSystems.map((sys, i) => (
+            <motion.div
+              key={i}
+              whileHover={{ scale: 1.05, y: -4 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className={`absolute inset-0 opacity-10 bg-gradient-to-br ${sys.gradient}`}></div>
-              <div className="relative z-10 flex flex-col gap-3 text-left">
-                <div className="text-4xl">{sys.icon}</div>
-                <h2 className="text-xl font-semibold">{sys.title}</h2>
-                <p className="text-sm text-muted-foreground">{sys.desc}</p>
+              <div
+                onClick={() => handleSystemClick(sys)}
+                className="cursor-pointer block p-6 rounded-2xl border border-border bg-card shadow-lg hover:shadow-xl transition relative overflow-hidden"
+              >
+                <div className={`absolute inset-0 opacity-10 bg-gradient-to-br ${sys.gradient}`} />
+                <div className="relative z-10 flex flex-col gap-3 text-left">
+                  <div className="text-5xl">{sys.icon}</div>
+                  <h2 className="text-xl font-semibold">{sys.title}</h2>
+                  <p className="text-sm text-muted-foreground">{sys.desc}</p>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-      {showPopup && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
-          <div className="bg-[#1a1a1a] text-white rounded-xl p-6 max-w-sm w-full shadow-lg text-center">
-            <h2 className="text-xl font-semibold mb-3">Access Denied</h2>
-          <p className="mb-4">
-              You must be a <span className="font-bold">{requiredRole}</span> to access this system.
-            </p>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="px-4 py-2 bg-cyan-400 text-black font-medium rounded-lg hover:bg-cyan-500 transition"
-            >
-              Close
-            </button>
-          </div>
+            </motion.div>
+          ))}
         </div>
       )}
 
+      {/* Access denied popup (fallback) */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-[#1a1a1a] rounded-2xl p-8 max-w-md w-full mx-4 text-center shadow-2xl shadow-2xl border border-white/10"
+          >
+            <div className="text-6xl mb-4">Locked</div>
+            <h2 className="text-2xl font-bold mb-3">Restricted Access</h2>
+            <p className="text-gray-300 mb-6">
+              This system requires <span className="text-cyan-400 font-bold capitalize">{requiredRole}</span> privileges.
+            </p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="px-8 py-3 bg-cyan-500 text-black font-semibold rounded-xl hover:bg-cyan-400 transition"
+            >
+              Got it
+            </button>
+          </motion.div>
+        </div>
+      )}
 
       <motion.footer
-        className="mt-16 text-sm text-muted-foreground"
+        className="mt-20 text-sm text-muted-foreground"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.5 }}
       >
-        © {new Date().getFullYear()} BitMind Systems. All rights reserved.
+        © {new Date().getFullYear()} BitMind Systems • Role: {userType || "Unknown"}
       </motion.footer>
     </div>
   );
