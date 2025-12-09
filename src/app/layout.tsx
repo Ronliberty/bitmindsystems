@@ -7,6 +7,9 @@ import { Analytics } from "@vercel/analytics/next"
 export const metadata: Metadata = {
   title: "BitMind Systems",
   description: "Secure login entry to BitMind Systems",
+  icons: {
+    icon:"/bms.ico"
+  }
 };
 
 export default function RootLayout({
