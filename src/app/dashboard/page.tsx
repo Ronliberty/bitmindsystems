@@ -13,6 +13,8 @@ const rolePermissions: Record<string, string[]> = {
   coach: ["coach"],
   artist: ["artist"],
   porta: ["porta"],
+  finance: ["finance"],
+  mod: ["moderator"],
   // add more later like "vip", "pro", etc.
 };
 const defaultSystems = [
@@ -64,8 +66,16 @@ const defaultSystems = [
     icon: "🎥",
     requiredType: "porta",
   },
+   {
+    title: "Finance / Manager",
+    desc: "Manage users, billing & analytics",
+    href: "/dashboard/systems/finance",
+    gradient: "from-cyan-400 to-blue-500",
+    icon: "🧠",
+    requiredType: "finance",
+  },
   {
-    title: "Admins / System Owners",
+    title: "Finance / Manager",
     desc: "Manage users, billing & analytics",
     href: "/dashboard/systems/admin",
     gradient: "from-cyan-400 to-blue-500",
