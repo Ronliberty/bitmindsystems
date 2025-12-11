@@ -75,12 +75,12 @@ const defaultSystems = [
     requiredType: "finance",
   },
   {
-    title: "Finance / Manager",
+    title: "Moderator / Manager",
     desc: "Manage users, billing & analytics",
-    href: "/dashboard/systems/admin",
+    href: "/dashboard/systems/moderator",
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
-    requiredType: "manager",
+    requiredType: "moderator",
   },
 ];
 

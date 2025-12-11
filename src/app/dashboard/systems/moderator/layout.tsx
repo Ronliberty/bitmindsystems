@@ -14,12 +14,12 @@ import {
 import Link from "next/link";
 
 const quickActions = [
-  { title: "Orverview", icon: <LayoutDashboard className="w-6 h-6" />, href: "/dashboard/system/moderator" },
-    { title: "My Tasks", icon: <CheckSquare className="w-6 h-6" />, href: "/dashboard/system/moderator/tasks" },
-    { title: "Approved Tasks", icon: <CircleCheck className="w-6 h-6" />, href: "/dashboard/system/moderator/approved" },
-    { title: "Ongoing projects", icon: <Timer className="w-6 h-6" />, href: "/dashboard/system/moderator/active-projects" },
-    { title: "History", icon: <History className="w-6 h-6" />, href: "/dashboard/system/moderator/history" },
-    { title: "Earnings", icon: <DollarSign className="w-6 h-6" />, href: "/dashboard/system/moderator/earnings" },
+  { title: "Orverview", icon: <LayoutDashboard className="w-6 h-6" />, href: "/dashboard/systems/moderator" },
+    { title: "My Tasks", icon: <CheckSquare className="w-6 h-6" />, href: "/dashboard/systems/moderator/tasks" },
+    { title: "Approved Tasks", icon: <CircleCheck className="w-6 h-6" />, href: "/dashboard/systems/moderator/approved" },
+    { title: "Ongoing projects", icon: <Timer className="w-6 h-6" />, href: "/dashboard/systems/moderator/active-projects" },
+    { title: "History", icon: <History className="w-6 h-6" />, href: "/dashboard/systems/moderator/history" },
+    { title: "Earnings", icon: <DollarSign className="w-6 h-6" />, href: "/dashboard/systems/moderator/earnings" },
 ];
 
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
@@ -34,10 +34,10 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
             transition={{ duration: 0.5 }}
             className="text-3xl font-bold"
           >
-            🛍️ E-Commerce Dashboard
+            Moderator Dashboard
           </motion.h1>
           <p className="text-muted-foreground mt-2">
-            Manage your products, orders, and customers — all in one place.
+            Manage your tasks — all in one place.
           </p>
             <Link
       href="/dashboard"

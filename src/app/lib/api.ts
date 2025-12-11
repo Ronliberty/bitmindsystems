@@ -140,7 +140,38 @@ export interface FileReference {
   created_at: string;
   updated_at: string;
 }
+// types/task.ts  (or app/lib/api.ts)
+export interface TaskMode {
+  id: number;
+  created_at: string;     // ISO string
+  updated_at: string;
 
+  title: string;
+  description: string;
+
+  status:
+    | "draft"
+    | "pending"
+    | "assigned"
+    | "in_progress"
+    | "submitted"
+    | "review"
+    | "approved"
+    | "revision"
+    | "completed"
+    | "cancelled";
+
+  priority: "low" | "normal" | "high" | "urgent";
+
+  deadline: string | null;        // ISO datetime or null
+  started_at: string | null;
+  completed_at: string | null;
+  due_date: string | null;        // "YYYY-MM-DD" or null
+
+  // Auto-generated display fields (Django adds these when using choices)
+  status_display: string;
+  priority_display: string;
+}
 
 export async function fetchCurrentUser() {
   const res = await axios.get("/api/user/me/");
@@ -330,4 +361,22 @@ export async function getFiles(accessToken: string) {
 
   return res.json();
 }
+
+export async function getTask(accessToken: string) {
+  const res = await fetch(`${API_BASE}/api/employee/manager/task/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch gym members: ${res.status}`);
+  }
+
+  return res.json();
+}
+
 
