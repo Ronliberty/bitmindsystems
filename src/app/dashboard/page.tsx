@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const rolePermissions: Record<string, string[]> = {
-  manager: [ "elite", "porta", "manager"], 
+  manager: [ "manager"], 
   elite: ["elite"],                    
   employee: ["employee"],                       
   coach: ["coach"],
@@ -81,6 +81,14 @@ const defaultSystems = [
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
     requiredType: "moderator",
+  },
+  {
+    title: "Nayo/ Manager",
+    desc: "Manage users, billing & analytics",
+    href: "/dashboard/systems/manager",
+    gradient: "from-cyan-400 to-blue-500",
+    icon: "🧠",
+    requiredType: "manager",
   },
 ];
 

@@ -172,6 +172,126 @@ export interface TaskMode {
   status_display: string;
   priority_display: string;
 }
+// types/news.ts
+// TypeScript interfaces exported from Django serializers for News management
+
+export interface NewsSource {
+  id: number;
+  name: string;
+  url?: string;
+  reliability_score: number;
+}
+
+export interface Media {
+  file: string;
+  alt?: string | null;
+  caption?: string | null;
+}
+
+export interface Topic {
+  id: number;
+  name: string;
+}
+
+export interface NewsArticle {
+  id: number;
+  source: NewsSource;
+  source_id: number;
+  source_reliability_at_fetch: number;
+  title: string;
+  url: string;
+  summary: string;
+  language: string;
+  region: string;
+  topics: Topic[];
+  published_at: string; // ISO datetime string
+  fetched_at: string; // ISO datetime string
+  is_featured: boolean;
+  media?: Media[];
+}
+
+// types/jobs.ts
+// TypeScript interfaces matching your JobOpportunity model and related
+
+export type RemoteType = "remote" | "hybrid" | "onsite";
+
+export interface SkillTag {
+  id: number;
+  name: string;
+  // add color/slug if you have them
+}
+
+export interface Media {
+  id: number;
+  file: string;
+  alt?: string | null;
+  caption?: string | null;
+}
+
+export interface JobBoard {
+  id: number;
+  name: string;
+  url?: string;
+}
+
+export interface JobOpportunity {
+  id: string; // UUID as string
+  title: string;
+  company: string;
+  board?: JobBoard | null;
+  url?: string;
+  description: string;
+  location: string;
+  remote_type: RemoteType;
+  currency: string;
+  media?: Media[];
+  salary_min?: number | null;
+  salary_max?: number | null;
+  skills: SkillTag[];
+  posted_at: string; // ISO datetime
+  expires_at?: string | null; // ISO datetime
+  is_active: boolean;
+}
+
+
+// types/partnership.ts
+// TypeScript interfaces matching your Partnership and PartnershipCategory models
+
+export enum ProfitSplitType {
+  NONE = "none",
+  PERCENTAGE = "percentage",
+  FIXED = "fixed",
+}
+
+export interface PartnershipCategory {
+  id: number;
+  name: string;
+  description?: string | null;
+  created_at?: string;
+}
+
+export interface Partnership {
+  id: number;
+  title: string;
+  slug: string;
+  description: string;
+  category?: PartnershipCategory | null;
+  is_active: boolean;
+  monetary: boolean;
+  profit_split_type: ProfitSplitType;
+  profit_share_percentage?: number | null; // 0-100
+  fixed_share_amount?: number | null;
+  is_contract_based: boolean;
+  contract_template?: string | null; // URL to file
+  created_by: {
+    id: number;
+    username: string;
+    // add full_name/avatar if available
+  };
+  created_at: string;
+  updated_at: string;
+  view_count: number;
+}
 
 export async function fetchCurrentUser() {
   const res = await axios.get("/api/user/me/");
@@ -380,3 +500,19 @@ export async function getTask(accessToken: string) {
 }
 
 
+export async function getNews(accessToken: string) {
+  const res = await fetch(`${API_BASE}/api/employee/manager/task/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch gym members: ${res.status}`);
+  }
+
+  return res.json();
+}
