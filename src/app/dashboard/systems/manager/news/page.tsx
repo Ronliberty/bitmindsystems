@@ -18,7 +18,7 @@ import {
   X
 } from "lucide-react";
 import { newsService } from "@/services/newsService"; // Adjust path
-import { NewsSource, NewsArticle } from "@/types/news"; // Adjust path
+import { NewsSource, NewsArticle, Topic } from "@/types/news"; // Adjust path
 
 const reliabilityBadges = (score: number) => {
   if (score >= 90) return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-100";
@@ -165,6 +165,11 @@ export default function NewsPage() {
       console.error(err);
     }
   };
+  const tabToModalType = {
+  articles: "article",
+  sources: "source",
+} as const;
+
 
   if (loading) return <div className="p-10 text-center">Loading...</div>;
   if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
@@ -254,10 +259,14 @@ export default function NewsPage() {
               <Star className="w-4 h-4 text-primary group-hover:animate-pulse" />
               <span className="text-sm font-medium">Featured Only</span>
             </label>
-            <button onClick={() => openModal(activeTab, "add")} className="p-3 bg-primary/10 hover:bg-primary text-primary hover:text-background rounded-xl hover:shadow-lg transition-all flex items-center gap-2 font-medium">
-              <Plus className="w-5 h-5" />
-              Add New
-            </button>
+            <button
+  onClick={() => openModal(tabToModalType[activeTab], "add")}
+  className="p-3 bg-primary/10 hover:bg-primary text-primary hover:text-background rounded-xl hover:shadow-lg transition-all flex items-center gap-2 font-medium"
+>
+  <Plus className="w-5 h-5" />
+  Add New
+</button>
+
           </div>
         </motion.div>
 
