@@ -2,10 +2,11 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Film, ArrowLeft, CreditCard, FileText } from "lucide-react";
+import { Film, ArrowLeft, CreditCard, FileText, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 
 const quickActions = [
+  { title: "Overview", icon: <LayoutDashboard className="w-6 h-6" />, href: "/dashboard/systems/video" },
     { title: "Tasks", icon: <Film className="w-6 h-6" />, href: "/dashboard/systems/video/tasks" },
     { title: "Payments", icon: <CreditCard className="w-6 h-6" />, href: "/dashboard/systems/video/payment" },
 { title: "All Files", icon: <FileText className="w-6 h-6" />, href: "/dashboard/systems/video/files" },
