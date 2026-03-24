@@ -37,7 +37,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
         <div className="mb-8">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <LayoutDashboard className="w-6 h-6 text-primary" />
-            Manager
+            Agent
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             AI-powered control
@@ -88,7 +88,7 @@ export default function AgentLayout({ children }: { children: React.ReactNode })
             animate={{ opacity: 1, y: 0 }}
             className="text-lg font-semibold"
           >
-            Manager System
+             Bms System
           </motion.h2>
         </header>
 
