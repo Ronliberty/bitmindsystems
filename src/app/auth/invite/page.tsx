@@ -7,8 +7,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { registerUserWithInvite } from "@/app/lib/auth/api";
-
+// import { registerUserWithInvite } from "@/app/lib/auth/api";
+import { useAuth } from "@/context/AuthContext";
 function decodeJwtPayload(token: string) {
   try {
     const payload = token.split(".")[1];
@@ -38,6 +38,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
@@ -71,7 +72,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      await registerUserWithInvite({
+      await register({
         email: form.email,
         phone_number: form.phone_number,
         first_name: form.first_name,
@@ -80,7 +81,7 @@ export default function RegisterPage() {
         invite: inviteToken,
       });
 
-      router.push("/auth/login");
+      router.push("/dashboard");
     } catch (err: any) {
       console.error(err);
       setError(err?.response?.data || "Registration failed");

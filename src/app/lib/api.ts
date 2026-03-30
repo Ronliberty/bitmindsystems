@@ -429,7 +429,7 @@ export async function getPortaSubmissions(accessToken: string): Promise<PortaSub
 
 
 export async function getTasks(accessToken: string) {
-  const res = await fetch(`${API_BASE}/api/employee/manager/tasks/`, {
+  const res = await fetch(`${API_BASE}/api/employee/manage/tasks/`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

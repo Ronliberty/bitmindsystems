@@ -58,24 +58,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setLoading(false);
     }
   }
+async function register(payload: any) {
+  setLoading(true);
+  try {
+    const endpoint = payload.invite
+      ? "/api/register/"     // invite flow
+      : "/api/signup/";      // normal flow
 
-  /* -------------------------- REGISTER ------------------------ */
-  async function register(payload: any) {
-    setLoading(true);
-    try {
-      const res = await axios.post("/api/signup/", {
-        ...payload,
-        react_app: process.env.NEXT_PUBLIC_APP_UUID,
-      });
+    const res = await axios.post(endpoint, {
+      ...payload,
+      react_app: process.env.NEXT_PUBLIC_APP_UUID,
+    });
 
+    // Optional: only auto-login for normal signup
+    if (!payload.invite) {
       syncAccess(res.data.access ?? null);
       setUser(res.data.user ?? null);
-
-      return res.data;
-    } finally {
-      setLoading(false);
     }
+
+    return res.data;
+  } finally {
+    setLoading(false);
   }
+}
+  /* -------------------------- REGISTER ------------------------ */
+  // async function register(payload: any) {
+  //   setLoading(true);
+  //   try {
+  //     const res = await axios.post("/api/signup/", {
+  //       ...payload,
+  //       react_app: process.env.NEXT_PUBLIC_APP_UUID,
+  //     });
+
+  //     syncAccess(res.data.access ?? null);
+  //     setUser(res.data.user ?? null);
+
+  //     return res.data;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
 
   /* -------------------------- REFRESH ------------------------- */
   async function refresh(): Promise<boolean> {

@@ -84,7 +84,12 @@ export default function Home() {
                 <div className="h-3 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full w-1/2 mx-auto"></div>
                 <div className="h-3 bg-gradient-to-r from-gray-600 to-gray-700 rounded-full w-3/4 mx-auto"></div>
               </div>
-              <Link href="/landing">
+              <Link
+                href="https://bitmindsystem.tech/"
+                target="_blank"
+                rel="noopener noreferrer"
+               
+               >
                 <motion.div
                   className="mt-8 w-28 h-10 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-full flex items-center justify-center text-sm font-semibold shadow-md shadow-cyan-500/30"
                   whileHover={{ scale: 1.1 }}
