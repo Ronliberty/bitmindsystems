@@ -1,75 +1,102 @@
-// layout.tsx
+
+
 "use client";
 
-import { motion } from "framer-motion";
-import { FolderKanban, Users, Star, FileText, BarChart2, Upload, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+   LayoutDashboard,
+    Upload,
+    Users,
+    FileText,
+    BarChart2,
 
-const quickActions = [
-  { title: "Add Project", icon: <Upload className="w-6 h-6" />, href: "/portfolio/add" },
+   ArrowLeft,
+ 
+} from "lucide-react";
+
+const navItems = [
+   { title: "Add Project", icon: <Upload className="w-6 h-6" />, href: "/portfolio/add" },
   { title: "View Clients", icon: <Users className="w-6 h-6" />, href: "/dashboard/systems/portfolio/submissions" },
-  { title: "View Testimonials", icon: <Star className="w-6 h-6" />, href: "/portfolio/testimonials" },
+ 
   { title: "Reports", icon: <FileText className="w-6 h-6" />, href: "/portfolio/reports" },
   { title: "Analytics", icon: <BarChart2 className="w-6 h-6" />, href: "/portfolio/analytics" },
+
 ];
 
 export default function PortfolioLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
   return (
-    <section className="min-h-screen w-full bg-background text-foreground px-6 py-10">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <header className="mb-8">
-          <motion.h1
-            initial={{ opacity: 0, y: -15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl font-bold"
-          >
-            🎥 Portfolio Dashboard
-          </motion.h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your creative projects, clients, and testimonials — all in one workspace.
+    <div className="h-screen overflow-hidden bg-background text-foreground flex">
+      
+      {/* Sidebar */}
+      <aside className="w-64 border-r border-border bg-card p-5 hidden md:flex flex-col">
+        
+        <div className="mb-8">
+          <h1 className="text-xl font-bold flex items-center gap-2">
+            <LayoutDashboard className="w-6 h-6 text-primary" />
+            Agent
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            AI-powered control
           </p>
+        </div>
+
+        <nav className="flex flex-col gap-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+
+            return (
+              <Link
+                key={item.title}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all
+                  ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow"
+                      : "hover:bg-muted"
+                  }
+                `}
+              >
+                {item.icon}
+                {item.title}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="mt-auto pt-6">
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-sm text-cyan-400 hover:underline mb-4"
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4" />
             Back
           </Link>
+        </div>
+      </aside>
+
+      {/* Right Side */}
+      <div className="flex-1 flex flex-col">
+        
+        {/* Header (fixed inside layout) */}
+        <header className="h-16 border-b border-border flex items-center px-6 shrink-0 bg-background">
+          <motion.h2
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-lg font-semibold"
+          >
+             Bms System
+          </motion.h2>
         </header>
 
-        {/* Quick Actions */}
-        <motion.div
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-10"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {quickActions.map((action) => (
-            <Link
-              key={action.title}
-              href={action.href}
-              className="p-4 bg-card border border-border rounded-xl text-center hover:shadow-lg hover:-translate-y-1 transition-all"
-            >
-              <div className="flex justify-center mb-2 text-primary">{action.icon}</div>
-              <p className="text-sm font-medium">{action.title}</p>
-            </Link>
-          ))}
-        </motion.div>
-
-        {/* Page content injected here */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-        >
+        {/* Scrollable Content ONLY */}
+        <main className="flex-1 overflow-y-auto p-6">
           {children}
-        </motion.div>
+        </main>
       </div>
-    </section>
+    </div>
   );
 }
-
-
-// page.tsx

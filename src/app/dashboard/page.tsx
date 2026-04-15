@@ -15,6 +15,7 @@ const rolePermissions: Record<string, string[]> = {
   porta: ["porta"],
   finance: ["finance"],
   mod: ["moderator"],
+  admin: ["admin"],
   // add more later like "vip", "pro", etc.
 };
 const defaultSystems = [
@@ -89,6 +90,14 @@ const defaultSystems = [
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
     requiredType: "manager",
+  },
+  {
+    title: "Admin Dashboard",
+    desc: "Manage users, billing & analytics",
+    href: "/dashboard/systems/admin",
+    gradient: "from-cyan-400 to-blue-500",
+    icon: "🧠",
+    requiredType: "admin",
   },
 ];
 
