@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       syncAccess(res.data.access ?? null);
+      // await getMe();
       setUser(res.data.user ?? null);
     } finally {
       setLoading(false);
@@ -81,41 +82,59 @@ async function register(payload: any) {
     setLoading(false);
   }
 }
-  /* -------------------------- REGISTER ------------------------ */
-  // async function register(payload: any) {
-  //   setLoading(true);
+ 
+
+  /* -------------------------- REFRESH ------------------------- */
+  // async function refresh(): Promise<boolean> {
   //   try {
-  //     const res = await axios.post("/api/signup/", {
-  //       ...payload,
-  //       react_app: process.env.NEXT_PUBLIC_APP_UUID,
-  //     });
+  //     const res = await axios.post("/api/auth/refresh/");
 
   //     syncAccess(res.data.access ?? null);
   //     setUser(res.data.user ?? null);
 
-  //     return res.data;
+  //     return true;
+  //   } catch {
+  //     syncAccess(null);
+  //     setUser(null);
+  //     return false;
   //   } finally {
   //     setLoading(false);
   //   }
   // }
 
-  /* -------------------------- REFRESH ------------------------- */
-  async function refresh(): Promise<boolean> {
-    try {
-      const res = await axios.post("/api/auth/refresh/");
+async function refresh(): Promise<boolean> {
+  try {
+    const res = await axios.post("/api/auth/refresh/");
 
-      syncAccess(res.data.access ?? null);
-      setUser(res.data.user ?? null);
-
-      return true;
-    } catch {
+    const access = res.data?.access;
+    if (!access) {
       syncAccess(null);
       setUser(null);
       return false;
-    } finally {
-      setLoading(false);
     }
+
+    syncAccess(access);
+
+    // 🔥 THIS IS THE IMPORTANT PART (Option 1)
+    await getMe();
+
+    return true;
+  } catch {
+    syncAccess(null);
+    setUser(null);
+    return false;
+  } finally {
+    setLoading(false);
   }
+}
+async function getMe() {
+  try {
+    const res = await axios.get("/api/auth/me/");
+    setUser(res.data);
+  } catch {
+    setUser(null);
+  }
+}
 
   /* -------------------------- LOGOUT -------------------------- */
   async function logout() {
@@ -154,3 +173,6 @@ export function useAuth() {
     if (!ctx) throw new Error("useAuth must be used within AuthProvider");
     return ctx;
 }
+
+
+

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { FcGoogle } from "react-icons/fc";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-
+import { Eye, EyeOff } from "lucide-react";
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
@@ -14,30 +14,62 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+
+
+  function validate(email: string, password: string) {
+    if (!email) return "Email is required";
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Invalid email format";
+
+    if (!password) return "Password is required";
+    if (password.length < 6)
+      return "Password must be at least 6 characters";
+
+    return null;
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const validationError = validate(email, password);
+    if (validationError) {
+      setErr(validationError);
+      return;
+    }
     setLoading(true);
     setErr(null);
     try {
       await login(email, password);
-      console.log("✅ Login successful, redirecting...");
+      // console.log("✅ Login successful, redirecting...");
       router.push("/dashboard");
     } catch (e: any) {
-      console.error("❌ Login failed:", e);
-      setErr(e?.error || e?.detail || "Login failed");
+      // console.error("❌ Login failed:", e);
+       if (e?.response?.status === 401) {
+        setErr("Invalid email or password");
+      } else if (e?.response?.status === 400) {
+        setErr(e?.response?.data?.detail || "Invalid request");
+      } else if (e?.message === "Network Error") {
+        setErr("Network error. Check your internet connection.");
+      } else {
+        setErr("Something went wrong. Try again.");
+      }
+      // setErr(e?.error || e?.detail || "Login failed");
     } finally {
       setLoading(false);
     }
   }
-
+ function handleGoogleLogin() {
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/google/`;
+  }
   useEffect(() => {
     document.body.style.overflow = "auto";
   }, []);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-cyan-800 text-white relative overflow-hidden">
-      {/* Background */}
+  
       <div className="absolute inset-0 -z-10">
         <motion.div
           className="absolute top-[10%] left-[20%] w-[40vmax] h-[40vmax] bg-cyan-500 rounded-full blur-[100px] opacity-20"
@@ -51,7 +83,7 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* Card */}
+
       <motion.div
         className="w-[90%] max-w-md p-8 rounded-3xl bg-gray-900/60 backdrop-blur-xl border border-white/10 shadow-2xl text-center"
         initial={{ opacity: 0, y: 20 }}
@@ -70,7 +102,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
-              placeholder="you@example.com"
+              placeholder="your@example.com"
               required
               className="w-full mt-1 p-3 rounded-lg bg-gray-800/60 border border-gray-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400 outline-none text-sm"
             />
@@ -81,10 +113,17 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               className="w-full mt-1 p-3 rounded-lg bg-gray-800/60 border border-gray-700 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400 outline-none text-sm"
             />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
           </div>
           <button
             type="submit"
@@ -102,14 +141,15 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-700"></div>
         </div>
 
-        
+         <button
+          onClick={handleGoogleLogin}
+          className="mt-6 flex items-center justify-center gap-3 w-full py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-200 transition"
+        >
+          <FcGoogle size={20} />
+          Continue with Google
+        </button>
 
-        <p className="text-sm text-gray-500 mt-6">
-          Don’t have an account?{" "}
-          <Link href="/auth/register" className="text-cyan-400 hover:underline">
-            Create one
-          </Link>
-        </p>
+       
       </motion.div>
     </div>
   );
