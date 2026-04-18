@@ -13,10 +13,13 @@ import {
     UserPlus,
     Database,
    ArrowLeft,
+   Bot,
+
  
 } from "lucide-react";
 
 const navItems = [
+  { title: "AI Assistant", icon: <Bot className="w-5 h-5" />, href: "/dashboard/systems/admin" },
   { title: "Manage Users", icon: <Users className="w-6 h-6" />, href: "/dashboard/systems/admin/users" },
   { title: "System Settings", icon: <Settings className="w-6 h-6" />, href: "/dashboard/systems/admin/settings" },
   { title: "View Analytics", icon: <BarChart2 className="w-6 h-6" />, href: "/dashboard/systems/admin/analytics" },

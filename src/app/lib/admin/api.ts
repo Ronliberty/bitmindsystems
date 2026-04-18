@@ -1,11 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { ReactApp, UserAccount } from "@/types/admin/types"; 
+import { ReactApp, UserAccount } from "@/types/admin/types";
 
 // =========================
 // 🔹 CONFIG
 // =========================
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 // =========================
 // 🔹 AXIOS INSTANCE
@@ -15,25 +15,95 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // ✅ IMPORTANT for cookies
 });
 
 // =========================
-// 🔹 TOKEN HANDLING (JWT)
+// 🔹 REQUEST INTERCEPTOR (ACCESS TOKEN)
 // =========================
-const getAccessToken = () => {
-  if (typeof window !== "undefined") {
-    return localStorage.getItem("access_token");
-  }
-  return null;
-};
-
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = getAccessToken();
+  const token = (globalThis as any)._access;
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
+
+// =========================
+// 🔹 AUTO REFRESH LOGIC
+// =========================
+let isRefreshing = false;
+let queue: any[] = [];
+
+const processQueue = (error: any, token: string | null) => {
+  queue.forEach((prom) => {
+    if (error) prom.reject(error);
+    else prom.resolve(token);
+  });
+  queue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest: any = error.config;
+
+    // 🔥 HANDLE 401
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          queue.push({
+            resolve: (token: string) => {
+              originalRequest.headers["Authorization"] = `Bearer ${token}`;
+              resolve(api(originalRequest));
+            },
+            reject,
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const res = await axios.post(
+          `${API_URL}/api/auth/refresh/`,
+          {},
+          { withCredentials: true }
+        );
+
+        const newAccess = res.data?.access;
+
+        if (!newAccess) throw new Error("No access token returned");
+
+        // ✅ store new access
+        (globalThis as any)._access = newAccess;
+
+        processQueue(null, newAccess);
+
+        // ✅ retry original request
+        originalRequest.headers["Authorization"] = `Bearer ${newAccess}`;
+
+        return api(originalRequest);
+      } catch (err) {
+        processQueue(err, null);
+
+        (globalThis as any)._access = null;
+
+        // 🔥 HARD LOGOUT
+        window.location.href = "/login";
+
+        return Promise.reject(err);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 // =========================
 // 🔹 ERROR HANDLER
@@ -48,12 +118,12 @@ const handleError = (error: AxiosError): never => {
 };
 
 // =========================
-// 🔹 REACT APPS API (GET ONLY)
+// 🔹 REACT APPS API
 // =========================
 export const AppAPI = {
   getAll: async (): Promise<ReactApp[]> => {
     try {
-      const res = await api.get<ReactApp[]>("/api/apps/");
+      const res = await api.get("/api/apps/");
       return res.data;
     } catch (error: any) {
       handleError(error);
@@ -63,7 +133,7 @@ export const AppAPI = {
 
   getOne: async (id: number): Promise<ReactApp> => {
     try {
-      const res = await api.get<ReactApp>(`/api/apps/${id}/`);
+      const res = await api.get(`/api/apps/${id}/`);
       return res.data;
     } catch (error: any) {
       handleError(error);
@@ -73,12 +143,12 @@ export const AppAPI = {
 };
 
 // =========================
-// 🔹 USER API (GET ONLY)
+// 🔹 USER API
 // =========================
 export const UserAPI = {
   getAll: async (): Promise<UserAccount[]> => {
     try {
-      const res = await api.get<UserAccount[]>("/api/admin/users/");
+      const res = await api.get("/api/admin/users/");
       return res.data;
     } catch (error: any) {
       handleError(error);
@@ -88,7 +158,7 @@ export const UserAPI = {
 
   getOne: async (id: number): Promise<UserAccount> => {
     try {
-      const res = await api.get<UserAccount>(`/api/admin/users/${id}/`);
+      const res = await api.get(`/api/admin/users/${id}/`);
       return res.data;
     } catch (error: any) {
       handleError(error);

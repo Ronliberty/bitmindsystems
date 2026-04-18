@@ -2,7 +2,7 @@
 
 // "use client";
 
-// import React, { createContext, useContext, useState, useEffect } from "react";
+// import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 // import axios from "axios";
 
 // type AuthContextType = {
@@ -21,7 +21,7 @@
 // axios.defaults.withCredentials = true;
 // axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL;
 
-// /* --------------------- AXIOS INTERCEPTOR FOR AUTH --------------------- */
+// /* --------------------- AXIOS INTERCEPTOR --------------------- */
 // axios.interceptors.request.use((config) => {
 //   const token = (globalThis as any)._access;
 //   if (token) {
@@ -30,15 +30,15 @@
 //   return config;
 // });
 
-// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-//   children,
-// }) => {
+// export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 //   const [access, setAccess] = useState<string | null>(null);
 //   const [user, setUser] = useState<any | null>(null);
 //   const [loading, setLoading] = useState(true);
 
+//   const hasRefreshed = useRef(false); // ✅ prevent double refresh
+
 //   function syncAccess(token: string | null) {
-//     (globalThis as any)._access = token; // store in memory only
+//     (globalThis as any)._access = token;
 //     setAccess(token);
 //   }
 
@@ -53,88 +53,62 @@
 //       });
 
 //       syncAccess(res.data.access ?? null);
-//       // await getMe();
-//       setUser(res.data.user ?? null);
+//       setUser(res.data.user ?? null); // ✅ direct
 //     } finally {
 //       setLoading(false);
 //     }
 //   }
-// async function register(payload: any) {
-//   setLoading(true);
-//   try {
-//     const endpoint = payload.invite
-//       ? "/api/register/"     // invite flow
-//       : "/api/signup/";      // normal flow
 
-//     const res = await axios.post(endpoint, {
-//       ...payload,
-//       react_app: process.env.NEXT_PUBLIC_APP_UUID,
-//     });
+//   /* -------------------------- REGISTER -------------------------- */
+//   async function register(payload: any) {
+//     setLoading(true);
+//     try {
+//       const endpoint = payload.invite
+//         ? "/api/register/"
+//         : "/api/signup/";
 
-//     // Optional: only auto-login for normal signup
-//     if (!payload.invite) {
-//       syncAccess(res.data.access ?? null);
-//       setUser(res.data.user ?? null);
+//       const res = await axios.post(endpoint, {
+//         ...payload,
+//         react_app: process.env.NEXT_PUBLIC_APP_UUID,
+//       });
+
+//       if (!payload.invite) {
+//         syncAccess(res.data.access ?? null);
+//         setUser(res.data.user ?? null);
+//       }
+
+//       return res.data;
+//     } finally {
+//       setLoading(false);
 //     }
-
-//     return res.data;
-//   } finally {
-//     setLoading(false);
 //   }
-// }
- 
 
-//   /* -------------------------- REFRESH ------------------------- */
-//   // async function refresh(): Promise<boolean> {
-//   //   try {
-//   //     const res = await axios.post("/api/auth/refresh/");
+//   /* -------------------------- REFRESH -------------------------- */
+//   async function refresh(): Promise<boolean> {
+//     try {
+//       const res = await axios.post("/api/auth/refresh/");
 
-//   //     syncAccess(res.data.access ?? null);
-//   //     setUser(res.data.user ?? null);
+//       const access = res.data?.access;
+//       const user = res.data?.user;
 
-//   //     return true;
-//   //   } catch {
-//   //     syncAccess(null);
-//   //     setUser(null);
-//   //     return false;
-//   //   } finally {
-//   //     setLoading(false);
-//   //   }
-//   // }
+//       if (!access) {
+//         syncAccess(null);
+//         setUser(null);
+//         return false;
+//       }
 
-// async function refresh(): Promise<boolean> {
-//   try {
-//     const res = await axios.post("/api/auth/refresh/");
+//       syncAccess(access);
+//       setUser(user ?? null); // ✅ NO /me call
 
-//     const access = res.data?.access;
-//     if (!access) {
+//       return true;
+//     } catch {
 //       syncAccess(null);
 //       setUser(null);
 //       return false;
+//     } finally {
+//       setLoading(false);
 //     }
-
-//     syncAccess(access);
-
-//     // 🔥 THIS IS THE IMPORTANT PART (Option 1)
-//     await getMe();
-
-//     return true;
-//   } catch {
-//     syncAccess(null);
-//     setUser(null);
-//     return false;
-//   } finally {
-//     setLoading(false);
 //   }
-// }
-// async function getMe() {
-//   try {
-//     const res = await axios.get("/api/auth/me/");
-//     setUser(res.data);
-//   } catch {
-//     setUser(null);
-//   }
-// }
 
 //   /* -------------------------- LOGOUT -------------------------- */
 //   async function logout() {
@@ -143,9 +117,12 @@
 //     setUser(null);
 //   }
 
-//   /* ---- ON PAGE LOAD: try refreshing using HttpOnly cookie ---- */
+//   /* -------------------------- INIT -------------------------- */
 //   useEffect(() => {
-//     refresh();
+//     if (!hasRefreshed.current) {
+//       hasRefreshed.current = true;
+//       refresh();
+//     }
 //   }, []);
 
 //   const isLoggedIn = !!user;
@@ -169,11 +146,10 @@
 // };
 
 // export function useAuth() {
-//     const ctx = useContext(AuthContext);
-//     if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-//     return ctx;
+//   const ctx = useContext(AuthContext);
+//   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+//   return ctx;
 // }
-
 
 
 
@@ -183,6 +159,13 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 
+/* --------------------- AXIOS INSTANCE --------------------- */
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+});
+
+/* --------------------- TYPES --------------------- */
 type AuthContextType = {
   access: string | null;
   user: any | null;
@@ -196,42 +179,76 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = process.env.NEXT_PUBLIC_API_URL;
-
-/* --------------------- AXIOS INTERCEPTOR --------------------- */
-axios.interceptors.request.use((config) => {
-  const token = (globalThis as any)._access;
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
-  }
-  return config;
-});
-
+/* --------------------- PROVIDER --------------------- */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [access, setAccess] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const hasRefreshed = useRef(false); // ✅ prevent double refresh
+  const hasRefreshed = useRef(false);
 
+  /* --------------------- TOKEN SYNC --------------------- */
   function syncAccess(token: string | null) {
-    (globalThis as any)._access = token;
+    (globalThis as any)._access = token; // keep for now
     setAccess(token);
   }
+
+  /* --------------------- REQUEST INTERCEPTOR --------------------- */
+  useEffect(() => {
+    const reqInterceptor = api.interceptors.request.use((config) => {
+      const token = (globalThis as any)._access;
+
+      if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      return config;
+    });
+
+    return () => {
+      api.interceptors.request.eject(reqInterceptor);
+    };
+  }, []);
+
+  /* --------------------- RESPONSE INTERCEPTOR (401) --------------------- */
+  useEffect(() => {
+    const resInterceptor = api.interceptors.response.use(
+      (res) => res,
+      async (err) => {
+        const original = err.config;
+
+        if (err.response?.status === 401 && !original._retry) {
+          original._retry = true;
+
+          const success = await refresh();
+
+          if (success) {
+            original.headers["Authorization"] = `Bearer ${(globalThis as any)._access}`;
+            return api(original);
+          }
+        }
+
+        return Promise.reject(err);
+      }
+    );
+
+    return () => {
+      api.interceptors.response.eject(resInterceptor);
+    };
+  }, []);
 
   /* -------------------------- LOGIN -------------------------- */
   async function login(email: string, password: string) {
     setLoading(true);
     try {
-      const res = await axios.post("/api/auth/login/", {
+      const res = await api.post("/api/auth/login/", {
         email,
         password,
         react_app: process.env.NEXT_PUBLIC_APP_UUID,
       });
 
       syncAccess(res.data.access ?? null);
-      setUser(res.data.user ?? null); // ✅ direct
+      setUser(res.data.user ?? null);
     } finally {
       setLoading(false);
     }
@@ -241,11 +258,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   async function register(payload: any) {
     setLoading(true);
     try {
-      const endpoint = payload.invite
-        ? "/api/register/"
-        : "/api/signup/";
+      const endpoint = payload.invite ? "/api/register/" : "/api/signup/";
 
-      const res = await axios.post(endpoint, {
+      const res = await api.post(endpoint, {
         ...payload,
         react_app: process.env.NEXT_PUBLIC_APP_UUID,
       });
@@ -264,7 +279,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /* -------------------------- REFRESH -------------------------- */
   async function refresh(): Promise<boolean> {
     try {
-      const res = await axios.post("/api/auth/refresh/");
+      const res = await api.post("/api/auth/refresh/");
 
       const access = res.data?.access;
       const user = res.data?.user;
@@ -276,7 +291,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       syncAccess(access);
-      setUser(user ?? null); // ✅ NO /me call
+      setUser(user ?? null);
 
       return true;
     } catch {
@@ -290,12 +305,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   /* -------------------------- LOGOUT -------------------------- */
   async function logout() {
-    await axios.post("/api/logout/");
+    await api.post("/api/logout/");
     syncAccess(null);
     setUser(null);
   }
 
-  /* -------------------------- INIT -------------------------- */
+  /* -------------------------- INIT (ON LOAD) -------------------------- */
   useEffect(() => {
     if (!hasRefreshed.current) {
       hasRefreshed.current = true;
@@ -303,6 +318,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  /* --------------------- ACTIVITY REFRESH --------------------- */
+  useEffect(() => {
+    let lastRefresh = Date.now();
+
+    const handleActivity = async () => {
+      const now = Date.now();
+
+      if (now - lastRefresh > 10 * 60 * 1000) {
+        await refresh();
+        lastRefresh = now;
+      }
+    };
+
+    window.addEventListener("click", handleActivity);
+    window.addEventListener("keydown", handleActivity);
+    window.addEventListener("focus", handleActivity);
+
+    return () => {
+      window.removeEventListener("click", handleActivity);
+      window.removeEventListener("keydown", handleActivity);
+      window.removeEventListener("focus", handleActivity);
+    };
+  }, []);
+
+  /* --------------------- STATE --------------------- */
   const isLoggedIn = !!user;
 
   return (
@@ -323,6 +363,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+/* --------------------- HOOK --------------------- */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
