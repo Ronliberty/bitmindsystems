@@ -341,7 +341,7 @@ const defaultSystems = [
     href: "/dashboard/systems/editor",
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
-    requiredType: "admin",
+    requiredType: "editor",
   },
    {
     title: "Agent Dashboard",
@@ -349,7 +349,7 @@ const defaultSystems = [
     href: "/dashboard/systems/agent",
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
-    requiredType: "admin",
+    requiredType: "agent",
   },
 ];
 
