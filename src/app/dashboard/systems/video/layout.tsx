@@ -16,7 +16,8 @@ import {
   // BarChart3,
   Bot,
    ArrowLeft,
-  Film, CreditCard, FileText, LayoutDashboard
+  Film, CreditCard, FileText, LayoutDashboard,
+  CheckCircle
 } from "lucide-react";
 
 const navItems = [
@@ -24,9 +25,10 @@ const navItems = [
     { title: "Tasks", icon: <Film className="w-6 h-6" />, href: "/dashboard/systems/video/tasks" },
     { title: "Payments", icon: <CreditCard className="w-6 h-6" />, href: "/dashboard/systems/video/payment" },
 { title: "All Files", icon: <FileText className="w-6 h-6" />, href: "/dashboard/systems/video/files" },
+{ title: "Completed Tasks", icon: <CheckCircle className="w-6 h-6" />, href: "/dashboard/systems/video/tasks/completed" },
 ];
 
-export default function AgentLayout({ children }: { children: React.ReactNode }) {
+export default function VideoLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (

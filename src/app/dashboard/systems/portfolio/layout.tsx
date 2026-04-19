@@ -13,15 +13,17 @@ import {
     BarChart2,
 
    ArrowLeft,
+   Bot,
  
 } from "lucide-react";
 
 const navItems = [
-   { title: "Add Project", icon: <Upload className="w-6 h-6" />, href: "/portfolio/add" },
+  { title: "AI Assistant", icon: <Bot className="w-5 h-5" />, href: "/dashboard/systems/portfolio" },
+   { title: "Add Project", icon: <Upload className="w-6 h-6" />, href: "/dashboard/systems/portfolio/add" },
   { title: "View Clients", icon: <Users className="w-6 h-6" />, href: "/dashboard/systems/portfolio/submissions" },
  
-  { title: "Reports", icon: <FileText className="w-6 h-6" />, href: "/portfolio/reports" },
-  { title: "Analytics", icon: <BarChart2 className="w-6 h-6" />, href: "/portfolio/analytics" },
+  { title: "Reports", icon: <FileText className="w-6 h-6" />, href: "/dashboard/systems/portfolio/reports" },
+  { title: "Analytics", icon: <BarChart2 className="w-6 h-6" />, href: "/dashboard/systems/portfolio/analytics" },
 
 ];
 
@@ -37,7 +39,7 @@ export default function PortfolioLayout({ children }: { children: React.ReactNod
         <div className="mb-8">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <LayoutDashboard className="w-6 h-6 text-primary" />
-            Agent
+            Portfolio
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             AI-powered control

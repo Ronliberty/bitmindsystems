@@ -26,3 +26,26 @@ export interface UserAccount {
   is_staff: boolean;
   date_joined: string; 
 }
+
+
+export type UserStats = {
+  total_users: number;
+  new_users: number;
+
+  admins: number;
+  managers: number;
+  employees: number;
+  coaches: number;
+  artists: number;
+
+  date?: string;
+};
+
+
+
+export type SystemSettings = {
+  maintenance_mode: boolean;
+  allow_registrations: boolean;
+  max_users: number;
+  updated_at?: string;
+};

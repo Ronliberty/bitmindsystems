@@ -36,7 +36,7 @@ export default function FinanceLayout({ children }: { children: React.ReactNode 
         <div className="mb-8">
           <h1 className="text-xl font-bold flex items-center gap-2">
             <LayoutDashboard className="w-6 h-6 text-primary" />
-            Agent
+            Finance
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
             AI-powered control

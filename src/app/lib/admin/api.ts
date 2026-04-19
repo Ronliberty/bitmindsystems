@@ -1,5 +1,5 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { ReactApp, UserAccount } from "@/types/admin/types";
+import { ReactApp, SystemSettings, UserAccount, UserStats } from "@/types/admin/types";
 
 // =========================
 // 🔹 CONFIG
@@ -164,5 +164,27 @@ export const UserAPI = {
       handleError(error);
     }
     return {} as UserAccount;
+  },
+};
+
+export const StatsAPI = {
+  getUserStats: async (): Promise<UserStats> => {
+    const res = await fetch("/api/users/stats/");
+    if (!res.ok) throw new Error("Failed to fetch stats");
+    return res.json();
+  },
+};
+
+
+
+export const SettingsAPI = {
+  getSettings: async (appId: string): Promise<SystemSettings> => {
+    const res = await fetch(`/api/system/settings/?app_id=${appId}`);
+
+    if (!res.ok) {
+      throw new Error("Failed to load system settings");
+    }
+
+    return res.json();
   },
 };
