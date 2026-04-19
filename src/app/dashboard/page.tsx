@@ -338,7 +338,7 @@ const defaultSystems = [
    {
     title: "editor",
     desc: "Manage users, billing & analytics",
-    href: "/dashboard/systems/editor",
+    href: "/dashboard/systems/video",
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
     requiredType: "editor",
@@ -346,7 +346,7 @@ const defaultSystems = [
    {
     title: "Agent Dashboard",
     desc: "Manage users, billing & analytics",
-    href: "/dashboard/systems/agent",
+    href: "/dashboard/systems/agents",
     gradient: "from-cyan-400 to-blue-500",
     icon: "🧠",
     requiredType: "agent",
