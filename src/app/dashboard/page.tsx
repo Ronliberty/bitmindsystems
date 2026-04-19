@@ -245,7 +245,7 @@ const rolePermissions: Record<string, string[]> = {
   elite: ["elite"],
   employee: ["employee"],
   agent: ["agent"],
-  editp: ["editor"],
+  editor: ["editor"],
   coach: ["coach"],
   artist: ["artist"],
   porta: ["porta"],
@@ -363,7 +363,7 @@ export default function Dashboard({ systems }: { systems?: any[] }) {
   /* ---------------- 🔒 REDIRECT IF NOT LOGGED IN ---------------- */
   useEffect(() => {
     if (!loading && !isLoggedIn) {
-      router.push("/login");
+      router.push("/auth/login");
     }
   }, [isLoggedIn, loading]);
 
