@@ -10,7 +10,7 @@ interface GetSubscriptionsParams {
 }
 
 export const subscriptionService = {
-  // GET /subscriptions/
+  
   getAll: async (params?: GetSubscriptionsParams): Promise<PaginatedSubscriptions> => {
     const cleanedParams: Record<string, any> = {};
     if (params?.search) cleanedParams.search = params.search;
