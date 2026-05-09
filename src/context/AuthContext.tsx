@@ -64,6 +64,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       async (err) => {
         const original = err.config;
 
+        if (original?.url?.includes("/api/auth/refresh/")) {
+          return Promise.reject(err);
+        }
+
         if (err.response?.status === 401 && !original._retry) {
           original._retry = true;
 
@@ -83,7 +87,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       api.interceptors.response.eject(resInterceptor);
     };
   }, []);
+  useEffect(() => {
+  let lastRefresh = Date.now();
 
+  const handleActivity = async () => {
+    const now = Date.now();
+
+    if (now - lastRefresh > 10 * 60 * 1000) {
+      await refresh();
+      lastRefresh = now;
+    }
+  };
+
+  window.addEventListener("click", handleActivity);
+  window.addEventListener("keydown", handleActivity);
+  window.addEventListener("focus", handleActivity);
+
+  return () => {
+    window.removeEventListener("click", handleActivity);
+    window.removeEventListener("keydown", handleActivity);
+    window.removeEventListener("focus", handleActivity);
+  };
+}, []);
   /* -------------------------- LOGIN -------------------------- */
   async function login(email: string, password: string) {
     setLoading(true);
