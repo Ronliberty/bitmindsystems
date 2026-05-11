@@ -67,7 +67,7 @@ api.interceptors.response.use(
 ============================================================ */
 
 export const getMyTasks = async (): Promise<Task[]> => {
-  const res = await api.get("/api/employee/tasks/");
+  const res = await api.get("/api/project/tasks/");
   return res.data;
 };
 

@@ -47,19 +47,19 @@ export const taskApi = {
     page?: number;
     limit?: number;
   }) => {
-    const response: AxiosResponse<{ data: Task[]; meta?: any }> = await api.get('/api/employee/tasks', { params });
+    const response: AxiosResponse<{ data: Task[]; meta?: any }> = await api.get('/api/project/tasks', { params });
     return response.data;
   },
 
   // Get single task by ID
   getById: async (id: number): Promise<Task> => {
-    const response: AxiosResponse<{ data: Task }> = await api.get(`/api/employee/tasks/${id}`);
+    const response: AxiosResponse<{ data: Task }> = await api.get(`/api/project/tasks/${id}`);
     return response.data.data;
   },
 
   // Create new task
   create: async (taskData: Omit<Task, 'id' | 'created_at' | 'updated_at' | 'attached_files'>) => {
-    const response: AxiosResponse<{ data: Task; message?: string }> = await api.post('/api/employee/tasks', taskData);
+    const response: AxiosResponse<{ data: Task; message?: string }> = await api.post('/api/project/tasks', taskData);
     return response.data;
   },
 
@@ -71,7 +71,7 @@ export const taskApi = {
 
   // Delete task
   delete: async (id: number): Promise<{ message: string }> => {
-    const response: AxiosResponse<{ message: string }> = await api.delete(`/api/employee//tasks/${id}`);
+    const response: AxiosResponse<{ message: string }> = await api.delete(`/api/project/tasks/${id}`);
     return response.data;
   },
 
