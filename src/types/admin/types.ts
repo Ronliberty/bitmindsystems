@@ -49,3 +49,16 @@ export type SystemSettings = {
   max_users: number;
   updated_at?: string;
 };
+
+
+
+export type EmailActionType = "invite" | "revoke";
+
+export interface EmailAction {
+  id: string;
+  email: string;
+  type: EmailActionType;
+  description: string;
+  status: "sent" | "pending" | "failed";
+  createdAt: string;
+}
