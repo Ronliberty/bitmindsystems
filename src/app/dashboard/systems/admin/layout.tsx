@@ -1,46 +1,98 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+import { useAuth } from "@/context/AuthContext";
 
 import {
-   LayoutDashboard,
-    Users,
-    Settings,
-    BarChart2,
-    UserPlus,
-    Database,
-   ArrowLeft,
-   Bot,
-   X,
-   Menu,
-
- 
+  LayoutDashboard,
+  Users,
+  Settings,
+  BarChart2,
+  UserPlus,
+  Database,
+  ArrowLeft,
+  Bot,
+  X,
+  Menu,
 } from "lucide-react";
 
 const navItems = [
-  { title: "AI Assistant", icon: <Bot className="w-5 h-5" />, href: "/dashboard/systems/admin" },
-  { title: "Manage Users", icon: <Users className="w-6 h-6" />, href: "/dashboard/systems/admin/users" },
-  { title: "System Settings", icon: <Settings className="w-6 h-6" />, href: "/dashboard/systems/admin/settings" },
-  { title: "View Analytics", icon: <BarChart2 className="w-6 h-6" />, href: "/dashboard/systems/admin/analytics" },
-  { title: "Add New Admin", icon: <UserPlus className="w-6 h-6" />, href: "/dashboard/systems/admin/new" },
-  { title: "Server Monitor", icon: <Database className="w-6 h-6" />, href: "/dashboard/systems/admin/servers" },
+  {
+    title: "AI Assistant",
+    icon: <Bot className="w-5 h-5" />,
+    href: "/dashboard/systems/admin",
+  },
+  {
+    title: "Manage Users",
+    icon: <Users className="w-6 h-6" />,
+    href: "/dashboard/systems/admin/users",
+  },
+  {
+    title: "System Settings",
+    icon: <Settings className="w-6 h-6" />,
+    href: "/dashboard/systems/admin/settings",
+  },
+  {
+    title: "View Analytics",
+    icon: <BarChart2 className="w-6 h-6" />,
+    href: "/dashboard/systems/admin/analytics",
+  },
+  {
+    title: "Add New Admin",
+    icon: <UserPlus className="w-6 h-6" />,
+    href: "/dashboard/systems/admin/new",
+  },
+  {
+    title: "Server Monitor",
+    icon: <Database className="w-6 h-6" />,
+    href: "/dashboard/systems/admin/servers",
+  },
 ];
 
-export default function VideoLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { user, loading } = useAuth();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  /* ================= AUTH GUARD ================= */
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      router.replace("/auth/login");
+    }
+  }, [user, loading, router]);
+
+  /* ================= LOADING SCREEN ================= */
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">
+            Authenticating...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* ================= BLOCK RENDER BEFORE REDIRECT ================= */
+  if (!user) return null;
+
   return (
     <div className="h-screen overflow-hidden bg-background text-foreground flex">
-      
       {/* ================= DESKTOP SIDEBAR ================= */}
       <aside className="w-64 border-r border-border bg-card p-5 hidden md:flex flex-col">
         <SidebarContent
@@ -72,11 +124,6 @@ export default function VideoLayout({
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-8">
-                {/* <h1 className="text-xl font-bold flex items-center gap-2">
-                  <LayoutDashboard className="w-6 h-6 text-primary" />
-                  Editor
-                </h1> */}
-
                 <button onClick={() => setSidebarOpen(false)}>
                   <X className="w-6 h-6" />
                 </button>
@@ -93,10 +140,8 @@ export default function VideoLayout({
 
       {/* ================= RIGHT SIDE ================= */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        
         {/* Header */}
         <header className="h-16 border-b border-border flex items-center justify-between px-4 md:px-6 shrink-0 bg-background">
-          
           {/* MOBILE MENU BUTTON */}
           <button
             onClick={() => setSidebarOpen(true)}
@@ -137,7 +182,7 @@ function SidebarContent({
 }) {
   return (
     <>
-     <div className="mb-8">
+      <div className="mb-8">
         <h1 className="text-xl font-bold flex items-center gap-2">
           <LayoutDashboard className="w-6 h-6 text-primary" />
           Editor
@@ -147,6 +192,7 @@ function SidebarContent({
           AI-powered control
         </p>
       </div>
+
       <nav className="flex flex-col gap-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
