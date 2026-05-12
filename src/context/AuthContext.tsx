@@ -1,18 +1,13 @@
-
-
-
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-/* --------------------- AXIOS INSTANCE --------------------- */
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
-/* --------------------- TYPES --------------------- */
 type AuthContextType = {
   access: string | null;
   user: any | null;
@@ -26,17 +21,16 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/* --------------------- PROVIDER --------------------- */
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [access, setAccess] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   const hasRefreshed = useRef(false);
+  const refreshInFlight = useRef<Promise<boolean> | null>(null); // ← lock
 
-  /* --------------------- TOKEN SYNC --------------------- */
   function syncAccess(token: string | null) {
-    (globalThis as any)._access = token; // keep for now
+    (globalThis as any)._access = token;
     setAccess(token);
   }
 
@@ -44,20 +38,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const reqInterceptor = api.interceptors.request.use((config) => {
       const token = (globalThis as any)._access;
-
-      if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
-
+      if (token) config.headers["Authorization"] = `Bearer ${token}`;
       return config;
     });
-
-    return () => {
-      api.interceptors.request.eject(reqInterceptor);
-    };
+    return () => api.interceptors.request.eject(reqInterceptor);
   }, []);
 
-  /* --------------------- RESPONSE INTERCEPTOR (401) --------------------- */
+  /* --------------------- RESPONSE INTERCEPTOR --------------------- */
   useEffect(() => {
     const resInterceptor = api.interceptors.response.use(
       (res) => res,
@@ -70,9 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (err.response?.status === 401 && !original._retry) {
           original._retry = true;
-
           const success = await refresh();
-
           if (success) {
             original.headers["Authorization"] = `Bearer ${(globalThis as any)._access}`;
             return api(original);
@@ -82,44 +67,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return Promise.reject(err);
       }
     );
-
-    return () => {
-      api.interceptors.response.eject(resInterceptor);
-    };
+    return () => api.interceptors.response.eject(resInterceptor);
   }, []);
-  useEffect(() => {
-  let lastRefresh = Date.now();
 
-  const handleActivity = async () => {
-    const now = Date.now();
-
-    if (now - lastRefresh > 10 * 60 * 1000) {
-      await refresh();
-      lastRefresh = now;
+  /* --------------------- REFRESH (with lock) --------------------- */
+  async function refresh(): Promise<boolean> {
+    // If a refresh is already in flight, reuse the same promise
+    if (refreshInFlight.current) {
+      return refreshInFlight.current;
     }
-  };
 
-  window.addEventListener("click", handleActivity);
-  window.addEventListener("keydown", handleActivity);
-  window.addEventListener("focus", handleActivity);
+    refreshInFlight.current = (async () => {
+      try {
+        const res = await api.post("/api/auth/refresh/");
+        const newAccess = res.data?.access;
+        const newUser = res.data?.user;
 
-  return () => {
-    window.removeEventListener("click", handleActivity);
-    window.removeEventListener("keydown", handleActivity);
-    window.removeEventListener("focus", handleActivity);
-  };
-}, []);
-  /* -------------------------- LOGIN -------------------------- */
+        if (!newAccess) {
+          syncAccess(null);
+          setUser(null);
+          return false;
+        }
+
+        syncAccess(newAccess);
+        setUser(newUser ?? null);
+        return true;
+      } catch {
+        syncAccess(null);
+        setUser(null);
+        return false;
+      } finally {
+        setLoading(false);
+        refreshInFlight.current = null; // ← release lock
+      }
+    })();
+
+    return refreshInFlight.current;
+  }
+
+  /* --------------------- LOGIN --------------------- */
   async function login(email: string, password: string) {
     setLoading(true);
     try {
-      
       const res = await api.post("/api/auth/login/", {
         email,
         password,
         react_app: process.env.NEXT_PUBLIC_APP_UUID,
       });
-
       syncAccess(res.data.access ?? null);
       setUser(res.data.user ?? null);
     } finally {
@@ -127,12 +121,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  /* -------------------------- REGISTER -------------------------- */
+  /* --------------------- REGISTER --------------------- */
   async function register(payload: any) {
     setLoading(true);
     try {
       const endpoint = payload.invite ? "/api/register/" : "/api/signup/";
-
       const res = await api.post(endpoint, {
         ...payload,
         react_app: process.env.NEXT_PUBLIC_APP_UUID,
@@ -149,41 +142,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  /* -------------------------- REFRESH -------------------------- */
-  async function refresh(): Promise<boolean> {
-    try {
-      const res = await api.post("/api/auth/refresh/");
-
-      const access = res.data?.access;
-      const user = res.data?.user;
-
-      if (!access) {
-        syncAccess(null);
-        setUser(null);
-        return false;
-      }
-
-      syncAccess(access);
-      setUser(user ?? null);
-
-      return true;
-    } catch {
-      syncAccess(null);
-      setUser(null);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  /* -------------------------- LOGOUT -------------------------- */
+  /* --------------------- LOGOUT --------------------- */
   async function logout() {
     await api.post("/api/logout/");
     syncAccess(null);
     setUser(null);
   }
 
-  /* -------------------------- INIT (ON LOAD) -------------------------- */
+  /* --------------------- INIT --------------------- */
   useEffect(() => {
     if (!hasRefreshed.current) {
       hasRefreshed.current = true;
@@ -191,16 +157,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  /* --------------------- ACTIVITY REFRESH --------------------- */
+  /* --------------------- ACTIVITY REFRESH (once, not twice) --------------------- */
   useEffect(() => {
     let lastRefresh = Date.now();
 
     const handleActivity = async () => {
       const now = Date.now();
-
       if (now - lastRefresh > 10 * 60 * 1000) {
+        lastRefresh = now; // ← update BEFORE await to prevent double-fire
         await refresh();
-        lastRefresh = now;
       }
     };
 
@@ -215,28 +180,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  /* --------------------- STATE --------------------- */
-  const isLoggedIn = !!user;
-
   return (
     <AuthContext.Provider
-      value={{
-        access,
-        user,
-        loading,
-        isLoggedIn,
-        login,
-        logout,
-        register,
-        refresh,
-      }}
+      value={{ access, user, loading, isLoggedIn: !!user, login, logout, register, refresh }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
 
-/* --------------------- HOOK --------------------- */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
