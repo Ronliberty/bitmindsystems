@@ -8,6 +8,11 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// Module-level lock — survives React StrictMode's double useEffect invocation.
+let globalInitPromise: Promise<boolean> | null = null;
+
+const REFRESH_COOLDOWN_MS = 30 * 1000; // 30 seconds — prevents sequential double-rotation
+
 type AuthContextType = {
   access: string | null;
   user: any | null;
@@ -26,8 +31,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const hasRefreshed = useRef(false);
-  const refreshInFlight = useRef<Promise<boolean> | null>(null); // ← lock
+  const initRefreshDone = useRef(false);
+  const refreshInFlight = useRef<Promise<boolean> | null>(null);
+  const lastRefreshTime = useRef<number>(0);
 
   function syncAccess(token: string | null) {
     (globalThis as any)._access = token;
@@ -54,9 +60,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (original?.url?.includes("/api/auth/refresh/")) {
           return Promise.reject(err);
         }
+        if (err.response?.status === 429) {
+          return Promise.reject(err);
+        }
 
         if (err.response?.status === 401 && !original._retry) {
           original._retry = true;
+
+          // Block until the init refresh has fully settled.
+          if (!initRefreshDone.current) {
+            await new Promise<void>((resolve) => {
+              const interval = setInterval(() => {
+                if (initRefreshDone.current) {
+                  clearInterval(interval);
+                  resolve();
+                }
+              }, 50);
+            });
+          }
+
           const success = await refresh();
           if (success) {
             original.headers["Authorization"] = `Bearer ${(globalThis as any)._access}`;
@@ -70,9 +92,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => api.interceptors.response.eject(resInterceptor);
   }, []);
 
-  /* --------------------- REFRESH (with lock) --------------------- */
+  /* --------------------- REFRESH (with dedup lock + cooldown) --------------------- */
   async function refresh(): Promise<boolean> {
-    // If a refresh is already in flight, reuse the same promise
+    // If a refresh completed recently, return cached result without hitting the server.
+    // Prevents sequential calls from rotating an already-rotated token.
+    const now = Date.now();
+    if (now - lastRefreshTime.current < REFRESH_COOLDOWN_MS) {
+      return !!(globalThis as any)._access;
+    }
+
+    // If a refresh is already in flight, reuse the same promise (concurrent dedup).
     if (refreshInFlight.current) {
       return refreshInFlight.current;
     }
@@ -91,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         syncAccess(newAccess);
         setUser(newUser ?? null);
+        lastRefreshTime.current = Date.now(); // stamp on success only
         return true;
       } catch {
         syncAccess(null);
@@ -98,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       } finally {
         setLoading(false);
-        refreshInFlight.current = null; // ← release lock
+        refreshInFlight.current = null;
       }
     })();
 
@@ -116,6 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       syncAccess(res.data.access ?? null);
       setUser(res.data.user ?? null);
+      lastRefreshTime.current = Date.now(); // login counts as a fresh token
     } finally {
       setLoading(false);
     }
@@ -147,37 +178,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await api.post("/api/logout/");
     syncAccess(null);
     setUser(null);
+    lastRefreshTime.current = 0; // reset so next login can refresh immediately
+    globalInitPromise = null;
   }
 
   /* --------------------- INIT --------------------- */
   useEffect(() => {
-    if (!hasRefreshed.current) {
-      hasRefreshed.current = true;
-      refresh();
+    if (globalInitPromise) {
+      globalInitPromise.finally(() => {
+        initRefreshDone.current = true;
+        const token = (globalThis as any)._access;
+        if (token) setAccess(token);
+      });
+      return;
     }
+
+    globalInitPromise = refresh();
+    globalInitPromise.finally(() => {
+      initRefreshDone.current = true;
+    });
   }, []);
 
-  /* --------------------- ACTIVITY REFRESH (once, not twice) --------------------- */
+  /* --------------------- ACTIVITY REFRESH --------------------- */
+  // Listeners are registered AFTER init completes so that a focus/click
+  // during page load cannot trigger a second token rotation.
   useEffect(() => {
     let lastRefresh = Date.now();
+    let cleanup: (() => void) | null = null;
 
-    const handleActivity = async () => {
-      const now = Date.now();
-      if (now - lastRefresh > 10 * 60 * 1000) {
-        lastRefresh = now; // ← update BEFORE await to prevent double-fire
-        await refresh();
-      }
-    };
+    globalInitPromise?.then(() => {
+      lastRefresh = Date.now();
 
-    window.addEventListener("click", handleActivity);
-    window.addEventListener("keydown", handleActivity);
-    window.addEventListener("focus", handleActivity);
+      const handleActivity = async () => {
+        const now = Date.now();
+        if (now - lastRefresh > 10 * 60 * 1000) {
+          lastRefresh = now;
+          await refresh();
+        }
+      };
 
-    return () => {
-      window.removeEventListener("click", handleActivity);
-      window.removeEventListener("keydown", handleActivity);
-      window.removeEventListener("focus", handleActivity);
-    };
+      window.addEventListener("click", handleActivity);
+      window.addEventListener("keydown", handleActivity);
+      window.addEventListener("focus", handleActivity);
+
+      cleanup = () => {
+        window.removeEventListener("click", handleActivity);
+        window.removeEventListener("keydown", handleActivity);
+        window.removeEventListener("focus", handleActivity);
+      };
+    });
+
+    return () => cleanup?.();
   }, []);
 
   return (
