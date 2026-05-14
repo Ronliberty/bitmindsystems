@@ -24,6 +24,14 @@ async getProjects(params?: any) {
   );
 },
 
+async getProject(id: number) {
+    const response = await api.get<Project>(
+      `/api/project/projects/${id}/`
+    );
+
+    return response.data;
+  },
+
   async createProject(data: CreateProjectPayload) {
     const response = await api.post<Project>("api/project/projects/", data);
 

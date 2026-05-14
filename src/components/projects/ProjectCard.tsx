@@ -14,7 +14,7 @@ export default function ProjectCard({
 }) {
   return (
     <Link
-      href={`/dashboard/projects/${project.id}`}
+      href={`/dashboard/systems/manager/projects/${project.id}`}
       className="group"
     >
       <motion.div
