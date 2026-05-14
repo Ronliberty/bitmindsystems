@@ -22,6 +22,8 @@ type AuthContextType = {
   logout: () => Promise<void>;
   register: (payload: any) => Promise<any>;
   refresh: () => Promise<boolean>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  confirmPasswordReset: (uid: string, token: string, newPassword: string, confirmPassword: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -172,6 +174,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
     }
   }
+  async function requestPasswordReset(email: string) {
+  await api.post("/api/auth/password-reset/", { email });
+}
+
+async function confirmPasswordReset(
+  uid: string,
+  token: string,
+  newPassword: string,
+  confirmPassword: string
+) {
+  await api.post("/api/auth/password-reset/confirm/", {
+    uid,
+    token,
+    new_password: newPassword,
+    confirm_password: confirmPassword,
+  });
+}
 
   /* --------------------- LOGOUT --------------------- */
   async function logout() {
@@ -233,7 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider
-      value={{ access, user, loading, isLoggedIn: !!user, login, logout, register, refresh }}
+      value={{ access, user, loading, isLoggedIn: !!user, login, logout, register, refresh, requestPasswordReset, confirmPasswordReset }}
     >
       {children}
     </AuthContext.Provider>
