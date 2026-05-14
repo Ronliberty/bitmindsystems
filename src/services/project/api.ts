@@ -1,25 +1,31 @@
-import api from "@/app/lib/prod/api";
+import api from "@/app/lib/general/api";
+import { normalizeList } from "@/app/lib/general/normalize";
 import { Project, CreateProjectPayload,  UpdateProjectPayload, } from "@/types/project/types";
   
 
 
 export const projectAPI = {
-  async getProjects(params?: any) {
-    const response = await api.get<Project[]>("/api/project/projects/", {
-      params,
-    });
+  // async getProjects(params?: any) {
+  //   const response = await api.get<Project[]>("/api/project/projects/", {
+  //     params,
+  //   });
 
-    return response.data;
-  },
+  //   return response.data;
+  // },
 
-  async getProject(id: number) {
-    const response = await api.get<Project>(`/api/project/projects/${id}/`);
+async getProjects(params?: any) {
+  const response = await api.get(
+    "/api/project/projects/",
+    { params }
+  );
 
-    return response.data;
-  },
+  return normalizeList<Project>(
+    response.data
+  );
+},
 
   async createProject(data: CreateProjectPayload) {
-    const response = await api.post<Project>("/api/project/projects/", data);
+    const response = await api.post<Project>("api/project/projects/", data);
 
     return response.data;
   },
@@ -29,7 +35,7 @@ export const projectAPI = {
     data: UpdateProjectPayload
   ) {
     const response = await api.patch<Project>(
-      `/projects/${id}/`,
+      `/api/project//projects/${id}/`,
       data
     );
 

@@ -147,13 +147,13 @@ export default function LoginPage() {
           <div className="flex-1 h-px bg-gray-700"></div>
         </div>
 
-         <button
+         {/* <button
           onClick={handleGoogleLogin}
           className="mt-6 flex items-center justify-center gap-3 w-full py-3 rounded-lg bg-white text-black font-medium hover:bg-gray-200 transition"
         >
           <FcGoogle size={20} />
           Continue with Google
-        </button>
+        </button> */}
 
        
       </motion.div>

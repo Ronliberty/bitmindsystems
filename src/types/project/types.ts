@@ -5,6 +5,8 @@ export type ProjectStatus =
   | "completed"
   | "cancelled";
 
+
+export type ProjectType = "client" | "internal";
 export interface Project {
   id: number;
 
@@ -25,7 +27,7 @@ export interface Project {
   start_date: string | null;
   end_date: string | null;
 
-  project_type: string;
+  project_type: ProjectType;
 
   total_tasks: number;
   completed_tasks: number;
@@ -39,6 +41,7 @@ export interface Project {
 export interface CreateProjectPayload {
   title: string;
   description?: string;
+  project_type: ProjectType;
 
   client?: number | null;
   project_lead?: number | null;
@@ -51,7 +54,7 @@ export interface CreateProjectPayload {
   start_date?: string | null;
   end_date?: string | null;
 
-  project_type?: string;
+  
 }
 
 export interface UpdateProjectPayload

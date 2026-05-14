@@ -2,11 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios";
+import api from "@/app/lib/general/api";
 
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true,
-});
+
 
 // Module-level lock — survives React StrictMode's double useEffect invocation.
 let globalInitPromise: Promise<boolean> | null = null;
