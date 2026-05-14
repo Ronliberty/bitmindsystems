@@ -16,7 +16,7 @@ export const useProjects = (params?: any) => {
 export const useProject = (id: number) => {
   return useQuery({
     queryKey: ["project", id],
-    queryFn: () => projectAPI.getProject(id),
+    queryFn: () => projectAPI.getProjects(id),
     enabled: !!id,
   });
 };
