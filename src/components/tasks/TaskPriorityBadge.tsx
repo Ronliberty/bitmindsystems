@@ -3,7 +3,7 @@ import { cn } from "@/app/lib/utils";
 
 const config: Record<TaskPriority, { label: string; dot: string }> = {
   low:      { label: "Low",      dot: "bg-zinc-400" },
-  medium:   { label: "Medium",   dot: "bg-amber-400" },
+  
   high:     { label: "High",     dot: "bg-orange-500" },
   critical: { label: "Critical", dot: "bg-red-500" },
 };

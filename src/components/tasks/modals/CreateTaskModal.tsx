@@ -39,8 +39,8 @@ interface StepThreeData {
 }
 
 const STEP_LABELS = ["Basic Info", "Schedule", "Assignment"];
-const PRIORITIES: TaskPriority[] = ["low", "medium", "high", "critical"];
-const STATUSES: TaskStatus[] = ["pending", "in_progress", "queued"];
+const PRIORITIES: TaskPriority[] = ["low", "high", "critical"];
+const STATUSES: TaskStatus[] = ["pending", "in_progress"];
 const ASSIGN_MODES: TaskAssignmentMode[] = ["manual", "auto", "suggested", "queued"];
 
 // ── Field wrappers ────────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ export function CreateTaskModal({ open, onClose }: Props) {
     title: "", description: "", project: null, category: null,
   });
   const [two, setTwo] = useState<StepTwoData>({
-    priority: "medium", status: "pending", deadline: "", due_date: "",
+    priority: "low", status: "pending", deadline: "", due_date: "",
   });
   const [three, setThree] = useState<StepThreeData>({
     assignment_mode: "manual", estimated_hours: "",
@@ -159,7 +159,7 @@ const categories = Array.isArray(categoriesData)
   const reset = () => {
     setStep(0);
     setOne({ title: "", description: "", project: null, category: null });
-    setTwo({ priority: "medium", status: "pending", deadline: "", due_date: "" });
+    setTwo({ priority: "low", status: "pending", deadline: "", due_date: "" });
     setThree({ assignment_mode: "manual", estimated_hours: "" });
   };
 
