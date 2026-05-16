@@ -53,7 +53,7 @@ export default function ProjectDetailPage() {
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div>
           <Link
-            href="/dashboard/projects"
+            href="/dashboard/systems/manager/projects"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeft className="w-4 h-4" />

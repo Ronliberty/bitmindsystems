@@ -22,7 +22,7 @@ import {
 const navItems = [
   { title: "AI Assistant", icon: <Bot className="w-5 h-5" />, href: "/dashboard/systems/manager" },
   { title: "Project", icon: <DollarSign className="w-5 h-5" />, href: "/dashboard/systems/manager/projects" },
-  { title: "News", icon: <PieChart className="w-5 h-5" />, href: "/dashboard/systems/manager/news" },
+  { title: "Taks", icon: <PieChart className="w-5 h-5" />, href: "/dashboard/systems/manager/tasks" },
   { title: "Jobs", icon: <FileText className="w-5 h-5" />, href: "/dashboard/systems/manager/jobs" },
   { title: "Market", icon: <BarChart3 className="w-5 h-5" />, href: "/dashboard/systems/manager/market" },
   { title: "Subscription", icon: <BarChart3 className="w-5 h-5" />, href: "/dashboard/systems/manager/subscription" },
